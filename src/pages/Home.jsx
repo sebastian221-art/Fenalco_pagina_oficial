@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, TrendingUp, Users, Award, Calendar, Handshake } from 'lucide-react';
-import Hero from '@/components/home/Hero';
-import ServiceCard from '@/components/services/ServiceCard';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import { SERVICES, AFFILIATION_BENEFITS, VALUES } from '@/utils/constants';
+import { CheckCircle, TrendingUp, Users, Award, Calendar, Shield } from 'lucide-react';
+import Hero from '../components/home/Hero';
+import ServiceCard from '../components/services/ServiceCard';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import { SERVICES, VALUES } from '../utils/constants';
 
 const Home = () => {
   return (
@@ -49,7 +49,7 @@ const Home = () => {
                 description: 'Defendemos tus intereses gremiales',
               },
               {
-                icon: <Handshake className="w-8 h-8" />,
+                icon: <Shield className="w-8 h-8" />,
                 title: 'Convenios',
                 description: 'Descuentos y beneficios exclusivos',
               },
