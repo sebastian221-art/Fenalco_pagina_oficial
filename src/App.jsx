@@ -8,6 +8,7 @@ import About from './pages/About';
 import Services from './pages/Services';
 import Affiliate from './pages/Affiliate';
 import Events from './pages/Events';
+import Convenios from './pages/Convenios';
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -24,23 +25,6 @@ function ScrollToTop() {
   return null;
 }
 
-// Temporary Coming Soon component
-function ComingSoon({ page }) {
-  return (
-    <div className="pt-20 min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
-      <div className="text-center px-4">
-        <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary-500 to-primary-700 bg-clip-text text-transparent">
-          {page}
-        </h1>
-        <p className="text-xl text-gray-600 mb-8">Página en construcción</p>
-        <Link to="/" className="inline-block bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-3.5 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all">
-          Volver al inicio
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 function App() {
   return (
     <Router>
@@ -54,13 +38,12 @@ function App() {
             <Route path="/servicios" element={<Services />} />
             <Route path="/afiliate" element={<Affiliate />} />
             <Route path="/eventos" element={<Events />} />
-            <Route path="/convenios" element={<ComingSoon page="Convenios" />} />
-            <Route path="/fenalempleo" element={<ComingSoon page="FenalEmpleo" />} />
+            <Route path="/convenios" element={<Convenios />} />
           </Routes>
         </main>
         <Footer />
       </div>
-      
+
       {/* Toast notifications */}
       <Toaster
         position="top-right"

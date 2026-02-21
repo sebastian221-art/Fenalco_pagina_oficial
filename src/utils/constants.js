@@ -177,7 +177,7 @@ export const PAYMENT_PERIODS = [
   { id: 'annual', label: 'Anual', discount: '10%' }
 ];
 
-// Navegación
+// Navegación — FenalEmpleo eliminado
 export const NAV_ITEMS = [
   { id: 'home', label: 'Inicio', path: '/' },
   { id: 'about', label: 'Quiénes Somos', path: '/quienes-somos' },
@@ -185,27 +185,62 @@ export const NAV_ITEMS = [
   { id: 'affiliate', label: 'Afíliate Aquí', path: '/afiliate' },
   { id: 'events', label: 'Eventos', path: '/eventos' },
   { id: 'agreements', label: 'Convenios', path: '/convenios' },
-  { id: 'jobs', label: 'FenalEmpleo', path: '/fenalempleo' }
 ];
 
-// Placeholder para eventos (hasta que Carlos proporcione los datos reales)
+// Eventos 2026
 export const UPCOMING_EVENTS = [
   {
     id: 1,
-    title: 'Próximo evento',
-    description: 'Descripción del evento próximo',
-    date: 'Por confirmar',
-    location: 'San Gil, Santander',
-    category: 'Capacitación'
-  }
-];
-
-// Placeholder para convenios
-export const AGREEMENTS = [
+    title: 'Asamblea General Ordinaria de Afiliados',
+    description: 'Reunión anual de afiliados para presentación de informes de gestión y toma de decisiones gremiales.',
+    date: '16 de Abril, 2026',
+    time: '2:00 p.m – 7:00 p.m',
+    location: 'Por confirmar',
+    category: 'Asamblea'
+  },
   {
-    id: 1,
-    name: 'Convenio pendiente',
-    description: 'Información por completar',
-    benefit: 'Descuentos especiales'
+    id: 2,
+    title: 'EXPOMOTOS 2026',
+    description: 'La feria de motos más importante de la región.',
+    date: '15-16-17 de Mayo, 2026',
+    time: '11:00 a.m – 7:00 p.m',
+    location: 'CENFER',
+    category: 'Feria'
+  },
+  {
+    id: 3,
+    title: 'ENLACE SANTANDER',
+    description: 'Espacio de conexión empresarial para los comerciantes de Santander.',
+    date: '04 de Junio, 2026',
+    time: '11:00 a.m – 7:00 p.m',
+    location: 'CENFER',
+    category: 'Networking'
+  },
+  {
+    id: 4,
+    title: 'Santander Sobre Ruedas 2026',
+    description: 'El evento de movilidad y transporte más importante del departamento.',
+    date: '10-11-12 de Julio, 2026',
+    time: '9:00 a.m – 7:00 p.m',
+    location: 'CENFER',
+    category: 'Feria'
+  },
+  {
+    id: 5,
+    title: 'Día del Tendero 2026',
+    description: 'Celebración y reconocimiento a los tenderos de la región.',
+    date: '26 de Julio, 2026',
+    time: '11:00 a.m – 7:00 p.m',
+    location: 'NEOMUNDO',
+    category: 'Celebración'
+  },
+  {
+    id: 6,
+    title: 'Noche De Los Mejores',
+    description: 'Reconocimiento a los empresarios más destacados de la región en una noche de gala.',
+    date: '26 de Noviembre, 2026',
+    time: '5:00 p.m – 9:00 p.m',
+    location: 'NEOMUNDO – GRAN SALÓN',
+    category: 'Gala'
   }
 ];
