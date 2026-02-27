@@ -1,0 +1,173 @@
+// ═══════════════════════════════════════════════════════════════════
+// SCHEMA DE BASE DE DATOS - FENALCO SUR DE SANTANDER
+// ═══════════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── MODELO DE AFILIACIÓN ──
+model Affiliation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    Status   @default(PENDING)
+
+  // ── PASO 1: Información General de la Empresa ──
+  razonSocial          String
+  nombreComercial      String
+  nit                  String   @unique
+  matriculaMercantil   String
+  codigoCIIU           String
+  naturalezaCliente    String?
+  sector               String
+  subSector            String?
+  numEmpleados         Int
+  telefonoFijo         String?
+  celular              String
+  email                String
+  direccion            String
+  ciudad               String
+  productosServicios   String   @db.Text
+
+  // ── PASO 2: Representante Legal ──
+  repPrimerNombre    String
+  repSegundoNombre   String?
+  repPrimerApellido  String
+  repSegundoApellido String?
+  repCedula          String
+  repTelefono        String
+  repEmail           String
+
+  // ── PASO 2: Contactos Adicionales (JSON) ──
+  gerenteNombre         String?
+  gerenteTelefono       String?
+  gerenteEmail          String?
+  asistenteNombre       String?
+  asistenteTelefono     String?
+  asistenteEmail        String?
+  rrhhNombre            String?
+  rrhhTelefono          String?
+  rrhhEmail             String?
+  carteraNombre         String?
+  carteraTelefono       String?
+  carteraEmail          String?
+
+  // ── PASO 3: Referencias Comerciales ──
+  ref1Nombre    String?
+  ref1Direccion String?
+  ref1Telefono  String?
+  ref2Nombre    String?
+  ref2Direccion String?
+  ref2Telefono  String?
+
+  // ── PASO 3: Empresas Referidas ──
+  refiere1Nombre    String?
+  refiere1Direccion String?
+  refiere1Email     String?
+  refiere1Telefono  String?
+
+  // ── PASO 3: Documentos (URLs de Cloudinary) ──
+  docRUT           String?
+  docCamara        String?
+  docRepresentante String?
+  docRenta         String?
+
+  // ── PASO 3: Servicios Socializados ──
+  serviciosSocializados Boolean @default(false)
+
+  // ── PASO 4: Forma de Pago ──
+  periodicidad      String
+  numEmpleadosPago  Int
+  ventas            Float
+  emailFacturacion  String
+
+  // ── PASO 4: Autorizaciones ──
+  autorizacionDatos   Boolean @default(false)
+  declaracionBienes   Boolean @default(false)
+  clausulaPermanencia Boolean @default(false)
+
+  // ── PASO 4: Firma Electrónica ──
+  firmaNombre         String
+  firmaCedula         String
+  firmaConsentimiento Boolean @default(false)
+
+  // ── RELACIONES ──
+  payments Payment[]
+
+  @@index([status])
+  @@index([nit])
+  @@index([email])
+  @@index([createdAt])
+}
+
+// ── MODELO DE PAGOS ──
+model Payment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── INFORMACIÓN DEL PAGO ──
+  affiliationId String?
+  affiliation   Affiliation? @relation(fields: [affiliationId], references: [id])
+
+  amount        Float
+  currency      String   @default("COP")
+  concept       String   // "membresia" | "mensualidad"
+  period        String?  // "enero_2026" | "2026_Q1"
+  status        PaymentStatus @default(PENDING)
+
+  // ── MÉTODO DE PAGO ──
+  paymentMethod String   // "transfer" | "wompi"
+  
+  // ── TRANSFERENCIA BANCARIA ──
+  transferBank        String?  // "Bancolombia" | "Banco Caja Social"
+  transferReference   String?  // Número de referencia
+  transferProof       String?  // URL del comprobante en Cloudinary
+  transferDate        DateTime?
+
+  // ── WOMPI (Tarjeta) ──
+  wompiTransactionId  String?  @unique
+  wompiReference      String?
+  wompiPaymentLink    String?
+  wompiStatus         String?
+  wompiResponse       Json?
+
+  // ── DATOS DEL PAGADOR ──
+  payerName     String
+  payerEmail    String
+  payerPhone    String?
+  payerNit      String?
+
+  // ── NOTAS INTERNAS ──
+  notes         String?  @db.Text
+  verifiedBy    String?  // Admin que verificó el pago
+  verifiedAt    DateTime?
+
+  @@index([status])
+  @@index([affiliationId])
+  @@index([paymentMethod])
+  @@index([createdAt])
+}
+
+// ── ENUMS ──
+enum Status {
+  PENDING    // Recibida, pendiente de revisión
+  REVIEWING  // En proceso de revisión
+  APPROVED   // Aprobada, activa
+  REJECTED   // Rechazada
+  INACTIVE   // Inactiva (no renovó)
+}
+
+enum PaymentStatus {
+  PENDING    // Pendiente de pago
+  PROCESSING // Procesando (esperando confirmación)
+  APPROVED   // Pago aprobado y verificado
+  REJECTED   // Pago rechazado
+  EXPIRED    // Link expiró
+}

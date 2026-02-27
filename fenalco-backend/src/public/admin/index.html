@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin - FENALCO Sur de Santander</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: #f3f4f6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
+      color: white;
+      padding: 32px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .stat-card h3 {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-card p {
+      font-size: 36px;
+      font-weight: bold;
+      color: #1f2937;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: white;
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .tab {
+      padding: 12px 24px;
+      border: none;
+      background: transparent;
+      color: #6b7280;
+      cursor: pointer;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      background: #f3f4f6;
+    }
+
+    .tab.active {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-header h2 {
+      font-size: 20px;
+      color: #1f2937;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    select, input {
+      padding: 8px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f9fafb;
+    }
+
+    th {
+      padding: 16px 24px;
+      text-align: left;
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 16px 24px;
+      border-bottom: 1px solid #f3f4f6;
+      color: #374151;
+    }
+
+    tr:hover {
+      background: #f9fafb;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge.pending { background: #fef3c7; color: #92400e; }
+    .badge.reviewing { background: #dbeafe; color: #1e40af; }
+    .badge.approved { background: #d1fae5; color: #065f46; }
+    .badge.rejected { background: #fee2e2; color: #991b1b; }
+    .badge.processing { background: #fef3c7; color: #92400e; }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #6b7280;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #9ca3af;
+    }
+
+    .empty svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      margin-bottom: 24px;
+    }
+
+    .modal-header h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .detail-row {
+      display: flex;
+      padding: 12px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .detail-row strong {
+      width: 200px;
+      color: #6b7280;
+    }
+
+    .detail-row span {
+      flex: 1;
+      color: #1f2937;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏢 Panel de Administración</h1>
+      <p>FENALCO Sur de Santander</p>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat-card">
+        <h3>Total Afiliaciones</h3>
+        <p id="stat-total">-</p>
+      </div>
+      <div class="stat-card">
+        <h3>Pendientes</h3>
+        <p id="stat-pending">-</p>
+      </div>
+      <div class="stat-card">
+        <h3>Aprobadas</h3>
+        <p id="stat-approved">-</p>
+      </div>
+      <div class="stat-card">
+        <h3>Pagos Aprobados</h3>
+        <p id="stat-payments">-</p>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('affiliations')">Afiliaciones</button>
+      <button class="tab" onclick="showTab('payments')">Pagos</button>
+    </div>
+
+    <!-- TABLA DE AFILIACIONES -->
+    <div class="table-container" id="affiliations-table">
+      <div class="table-header">
+        <h2>Afiliaciones</h2>
+        <div class="filter-group">
+          <select id="status-filter" onchange="loadAffiliations()">
+            <option value="">Todos los estados</option>
+            <option value="PENDING">Pendientes</option>
+            <option value="REVIEWING">En revisión</option>
+            <option value="APPROVED">Aprobadas</option>
+            <option value="REJECTED">Rechazadas</option>
+          </select>
+          <input type="search" id="search-input" placeholder="Buscar..." onkeyup="searchAffiliations()">
+          <button class="btn btn-primary" onclick="loadAffiliations()">🔄 Recargar</button>
+        </div>
+      </div>
+      <div id="affiliations-content"></div>
+    </div>
+
+    <!-- TABLA DE PAGOS -->
+    <div class="table-container" id="payments-table" style="display:none;">
+      <div class="table-header">
+        <h2>Pagos</h2>
+        <div class="filter-group">
+          <select id="payment-status-filter" onchange="loadPayments()">
+            <option value="">Todos los estados</option>
+            <option value="PENDING">Pendientes</option>
+            <option value="PROCESSING">En proceso</option>
+            <option value="APPROVED">Aprobados</option>
+            <option value="REJECTED">Rechazados</option>
+          </select>
+          <select id="payment-method-filter" onchange="loadPayments()">
+            <option value="">Todos los métodos</option>
+            <option value="transfer">Transferencia</option>
+            <option value="wompi">Tarjeta (Wompi)</option>
+          </select>
+          <button class="btn btn-primary" onclick="loadPayments()">🔄 Recargar</button>
+        </div>
+      </div>
+      <div id="payments-content"></div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modal-content"></div>
+  </div>
+
+  <script>
+    const API_URL = window.location.origin;
+    let currentTab = 'affiliations';
+
+    // ── TABS ──
+    function showTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+
+      if (tab === 'affiliations') {
+        document.getElementById('affiliations-table').style.display = 'block';
+        document.getElementById('payments-table').style.display = 'none';
+        loadAffiliations();
+      } else {
+        document.getElementById('affiliations-table').style.display = 'none';
+        document.getElementById('payments-table').style.display = 'block';
+        loadPayments();
+      }
+    }
+
+    // ── CARGAR ESTADÍSTICAS ──
+    async function loadStats() {
+      try {
+        const [affiliationsRes, paymentsRes] = await Promise.all([
+          fetch(`${API_URL}/api/affiliations`),
+          fetch(`${API_URL}/api/payments`),
+        ]);
+
+        const affiliations = await affiliationsRes.json();
+        const payments = await paymentsRes.json();
+
+        const pending = affiliations.data.filter(a => a.status === 'PENDING').length;
+        const approved = affiliations.data.filter(a => a.status === 'APPROVED').length;
+        const paymentsApproved = payments.data.filter(p => p.status === 'APPROVED').length;
+
+        document.getElementById('stat-total').textContent = affiliations.data.length;
+        document.getElementById('stat-pending').textContent = pending;
+        document.getElementById('stat-approved').textContent = approved;
+        document.getElementById('stat-payments').textContent = paymentsApproved;
+      } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+      }
+    }
+
+    // ── CARGAR AFILIACIONES ──
+    async function loadAffiliations() {
+      const content = document.getElementById('affiliations-content');
+      content.innerHTML = '<div class="loading">Cargando...</div>';
+
+      const status = document.getElementById('status-filter').value;
+      const url = `${API_URL}/api/affiliations${status ? '?status=' + status : ''}`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.data.length === 0) {
+          content.innerHTML = '<div class="empty"><p>No hay afiliaciones</p></div>';
+          return;
+        }
+
+        const table = `
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Empresa</th>
+                <th>NIT</th>
+                <th>Sector</th>
+                <th>Ciudad</th>
+                <th>Representante</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.data.map(a => `
+                <tr>
+                  <td>${new Date(a.createdAt).toLocaleDateString('es-CO')}</td>
+                  <td><strong>${a.nombreComercial}</strong></td>
+                  <td>${a.nit}</td>
+                  <td>${a.sector}</td>
+                  <td>${a.ciudad}</td>
+                  <td>${a.repPrimerNombre} ${a.repPrimerApellido}</td>
+                  <td><span class="badge ${a.status.toLowerCase()}">${a.status}</span></td>
+                  <td>
+                    <div class="actions">
+                      <button class="btn btn-primary" onclick="viewAffiliation('${a.id}')">Ver</button>
+                      ${a.status === 'PENDING' ? `
+                        <button class="btn btn-success" onclick="updateStatus('${a.id}', 'APPROVED')">✓</button>
+                        <button class="btn btn-danger" onclick="updateStatus('${a.id}', 'REJECTED')">✗</button>
+                      ` : ''}
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+        content.innerHTML = table;
+      } catch (error) {
+        content.innerHTML = '<div class="empty"><p>Error al cargar datos</p></div>';
+        console.error(error);
+      }
+    }
+
+    // ── VER DETALLES DE AFILIACIÓN ──
+    async function viewAffiliation(id) {
+      const modal = document.getElementById('modal');
+      const content = document.getElementById('modal-content');
+
+      content.innerHTML = '<div class="loading">Cargando...</div>';
+      modal.classList.add('active');
+
+      try {
+        const response = await fetch(`${API_URL}/api/affiliations/${id}`);
+        const data = await response.json();
+        const a = data.data;
+
+        content.innerHTML = `
+          <div class="modal-header">
+            <h2>${a.nombreComercial}</h2>
+            <p>NIT: ${a.nit}</p>
+          </div>
+          <div class="detail-row"><strong>Razón Social</strong><span>${a.razonSocial}</span></div>
+          <div class="detail-row"><strong>Sector</strong><span>${a.sector}</span></div>
+          <div class="detail-row"><strong>Ciudad</strong><span>${a.ciudad}</span></div>
+          <div class="detail-row"><strong>Dirección</strong><span>${a.direccion}</span></div>
+          <div class="detail-row"><strong>Teléfono</strong><span>${a.celular}</span></div>
+          <div class="detail-row"><strong>Email</strong><span>${a.email}</span></div>
+          <div class="detail-row"><strong>N° Empleados</strong><span>${a.numEmpleados}</span></div>
+          <div class="detail-row"><strong>Representante</strong><span>${a.repPrimerNombre} ${a.repPrimerApellido}</span></div>
+          <div class="detail-row"><strong>Cédula Rep.</strong><span>${a.repCedula}</span></div>
+          <div class="detail-row"><strong>Email Rep.</strong><span>${a.repEmail}</span></div>
+          <div class="detail-row"><strong>Estado</strong><span><span class="badge ${a.status.toLowerCase()}">${a.status}</span></span></div>
+          <div style="margin-top: 24px; display: flex; gap: 12px;">
+            <button class="btn btn-primary" onclick="closeModal()">Cerrar</button>
+          </div>
+        `;
+      } catch (error) {
+        content.innerHTML = '<div class="empty"><p>Error al cargar datos</p></div>';
+        console.error(error);
+      }
+    }
+
+    // ── ACTUALIZAR ESTADO ──
+    async function updateStatus(id, status) {
+      if (!confirm(`¿Confirmar cambio a ${status}?`)) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/affiliations/${id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        });
+
+        if (response.ok) {
+          alert('Estado actualizado correctamente');
+          loadAffiliations();
+          loadStats();
+        }
+      } catch (error) {
+        alert('Error al actualizar estado');
+        console.error(error);
+      }
+    }
+
+    // ── CARGAR PAGOS ──
+    async function loadPayments() {
+      const content = document.getElementById('payments-content');
+      content.innerHTML = '<div class="loading">Cargando...</div>';
+
+      const status = document.getElementById('payment-status-filter').value;
+      const method = document.getElementById('payment-method-filter').value;
+      
+      let url = `${API_URL}/api/payments?`;
+      if (status) url += `status=${status}&`;
+      if (method) url += `paymentMethod=${method}&`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.data.length === 0) {
+          content.innerHTML = '<div class="empty"><p>No hay pagos</p></div>';
+          return;
+        }
+
+        const table = `
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Empresa</th>
+                <th>Pagador</th>
+                <th>Monto</th>
+                <th>Método</th>
+                <th>Concepto</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.data.map(p => `
+                <tr>
+                  <td>${new Date(p.createdAt).toLocaleDateString('es-CO')}</td>
+                  <td>${p.affiliation?.nombreComercial || '-'}</td>
+                  <td>${p.payerName}</td>
+                  <td><strong>$${new Intl.NumberFormat('es-CO').format(p.amount)}</strong></td>
+                  <td>${p.paymentMethod === 'transfer' ? '🏦 Transferencia' : '💳 Tarjeta'}</td>
+                  <td>${p.concept}</td>
+                  <td><span class="badge ${p.status.toLowerCase()}">${p.status}</span></td>
+                  <td>
+                    ${p.status === 'PROCESSING' ? `
+                      <button class="btn btn-success" onclick="verifyPayment('${p.id}', 'APPROVED')">Aprobar</button>
+                      <button class="btn btn-danger" onclick="verifyPayment('${p.id}', 'REJECTED')">Rechazar</button>
+                    ` : '-'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+
+        content.innerHTML = table;
+      } catch (error) {
+        content.innerHTML = '<div class="empty"><p>Error al cargar datos</p></div>';
+        console.error(error);
+      }
+    }
+
+    // ── VERIFICAR PAGO ──
+    async function verifyPayment(id, status) {
+      if (!confirm(`¿Confirmar ${status === 'APPROVED' ? 'aprobación' : 'rechazo'} del pago?`)) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/payments/${id}/verify`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, verifiedBy: 'admin' }),
+        });
+
+        if (response.ok) {
+          alert('Pago actualizado correctamente');
+          loadPayments();
+          loadStats();
+        }
+      } catch (error) {
+        alert('Error al actualizar pago');
+        console.error(error);
+      }
+    }
+
+    // ── BUSCAR ──
+    let searchTimeout;
+    function searchAffiliations() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        const search = document.getElementById('search-input').value;
+        // Implementar búsqueda
+      }, 500);
+    }
+
+    // ── CERRAR MODAL ──
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    // Click fuera del modal para cerrar
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target.id === 'modal') closeModal();
+    });
+
+    // ── INICIALIZAR ──
+    loadStats();
+    loadAffiliations();
+    setInterval(loadStats, 30000); // Actualizar stats cada 30 segundos
+  </script>
+</body>
+</html>

@@ -271,15 +271,60 @@ const AffiliateForm = () => {
     }, 50);
   };
 
-  const onSubmit = async (data) => {
-    setIsSubmitting(true);
-    await new Promise(r => setTimeout(r, 1800));
-    console.log('Solicitud de afiliación:', data);
-    toast.success('¡Solicitud enviada! Pronto te contactaremos para continuar el proceso.');
+const onSubmit = async (data) => {
+  setIsSubmitting(true);
+
+  try {
+    console.log('📤 Enviando solicitud de afiliación al backend...');
+
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value instanceof FileList) {
+        if (value.length > 0) {
+          formData.append(key, value[0]);
+          console.log(`📎 Archivo agregado: ${key} = ${value[0].name}`);
+        }
+      } 
+      else if (value !== undefined && value !== null && value !== '') {
+        formData.append(key, String(value));
+      }
+    });
+
+    console.log('🚀 Enviando a:', `${import.meta.env.VITE_API_URL}/api/affiliations`);
+    
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/affiliations`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Error al enviar la solicitud');
+    }
+
+    console.log('✅ Solicitud enviada exitosamente:', result);
+
+    toast.success('¡Solicitud enviada! Pronto recibirás un correo de confirmación.');
+    
     setSubmitted(true);
     reset();
+    
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+
+  } catch (error) {
+    console.error('❌ Error al enviar afiliación:', error);
+    
+    toast.error(
+      error.message || 'Ocurrió un error al enviar la solicitud. Por favor intenta de nuevo.'
+    );
+  } finally {
     setIsSubmitting(false);
-  };
+  }
+};
 
   const goNext = () => { setStep(s => s + 1); scrollToFormTop(); };
   const goPrev = () => { setStep(s => s - 1); scrollToFormTop(); };
