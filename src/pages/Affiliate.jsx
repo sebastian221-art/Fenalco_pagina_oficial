@@ -109,8 +109,11 @@ const PaymentSection = () => (
 );
 
 const AffiliateForm = () => {
-  // ✅ SOLUCIÓN SIMPLE: Sin validación por pasos, solo al enviar
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    shouldUnregister: false,
+    mode: 'onSubmit'
+  });
+  
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -118,7 +121,6 @@ const AffiliateForm = () => {
   const formTopRef = useRef(null);
   const scrollToFormTop = () => { setTimeout(() => { formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); };
 
-  // ✅ SOLUCIÓN: Simplemente avanza sin validar
   const goNext = () => { setStep(s => s + 1); scrollToFormTop(); };
   const goPrev = () => { setStep(s => s - 1); scrollToFormTop(); };
 
@@ -127,6 +129,7 @@ const AffiliateForm = () => {
     try {
       console.log('📤 Enviando solicitud al backend...');
       const formData = new FormData();
+      
       Object.entries(data).forEach(([key, value]) => {
         if (value instanceof FileList) {
           if (value.length > 0) formData.append(key, value[0]);
@@ -135,7 +138,11 @@ const AffiliateForm = () => {
         }
       });
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/affiliations`, { method: 'POST', body: formData });
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/affiliations`, { 
+        method: 'POST', 
+        body: formData 
+      });
+      
       const result = await response.json();
       
       if (!response.ok) throw new Error(result.error || 'Error al enviar la solicitud');
@@ -184,269 +191,299 @@ const AffiliateForm = () => {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* PASO 1 */}
-        <div style={{ display: step === 1 ? 'block' : 'none' }}>
-          <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><Building2 className="w-5 h-5 text-primary-500" /> Información de la Empresa</h3>
-            <div className="grid md:grid-cols-2 gap-5">
-              <Field label="Razón Social" required error={errors.razonSocial?.message}>
-                <Input {...register('razonSocial', { required: 'Campo obligatorio' })} placeholder="Ej: Empresa S.A.S" />
-              </Field>
-              <Field label="Nombre Comercial" required error={errors.nombreComercial?.message}>
-                <Input {...register('nombreComercial', { required: 'Campo obligatorio' })} placeholder="Nombre que usa el negocio" />
-              </Field>
-              <Field label="NIT" required error={errors.nit?.message}>
-                <Input {...register('nit', { required: 'Campo obligatorio' })} placeholder="123456789-0" />
-              </Field>
-              <Field label="Matrícula Mercantil N°" required error={errors.matriculaMercantil?.message}>
-                <Input {...register('matriculaMercantil', { required: 'Campo obligatorio' })} />
-              </Field>
-              <Field label="Código CIIU" required error={errors.codigoCIIU?.message}>
-                <Input {...register('codigoCIIU', { required: 'Campo obligatorio' })} placeholder="Ej: 4711" />
-              </Field>
-              <Field label="Naturaleza del Cliente">
-                <Select {...register('naturalezaCliente')}>
-                  <option value="">Selecciona</option>
-                  <option value="persona_natural">Persona Natural</option>
-                  <option value="persona_juridica">Persona Jurídica</option>
-                </Select>
-              </Field>
-              <Field label="Sector" required error={errors.sector?.message}>
-                <Select {...register('sector', { required: 'Campo obligatorio' })}>
-                  <option value="">Selecciona un sector</option>
-                  <option value="alimentos">Alimentos y Bebidas</option>
-                  <option value="tecnologia">Tecnología</option>
-                  <option value="textil">Textil y Confección</option>
-                  <option value="construccion">Construcción</option>
-                  <option value="salud">Salud</option>
-                  <option value="comercio">Comercio al por menor</option>
-                  <option value="comercio_mayor">Comercio al por mayor</option>
-                  <option value="turismo">Turismo y Hotelería</option>
-                  <option value="servicios">Servicios Profesionales</option>
-                  <option value="educacion">Educación</option>
-                  <option value="otro">Otro</option>
-                </Select>
-              </Field>
-              <Field label="Sub Sector">
-                <Input {...register('subSector')} placeholder="Opcional" />
-              </Field>
-              <Field label="N° de Empleados" required error={errors.numEmpleados?.message}>
-                <Input type="number" {...register('numEmpleados', { required: 'Campo obligatorio', min: { value: 1, message: 'Mínimo 1' } })} placeholder="Ej: 5" />
-              </Field>
-              <Field label="Teléfono Fijo">
-                <Input type="tel" {...register('telefonoFijo')} placeholder="Ej: 6077123456" />
-              </Field>
-              <Field label="Celular" required error={errors.celular?.message}>
-                <Input type="tel" {...register('celular', { required: 'Campo obligatorio' })} placeholder="Ej: 3185840599" />
-              </Field>
-              <Field label="Correo Electrónico" required error={errors.email?.message}>
-                <Input type="email" {...register('email', { required: 'Campo obligatorio', pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' } })} placeholder="empresa@correo.com" />
-              </Field>
-            </div>
-            <div className="mt-5">
-              <Field label="Dirección" required error={errors.direccion?.message}>
-                <Input {...register('direccion', { required: 'Campo obligatorio' })} placeholder="Calle, Carrera, número" />
-              </Field>
-            </div>
-            <div className="mt-5">
-              <Field label="Ciudad" required error={errors.ciudad?.message}>
-                <Input {...register('ciudad', { required: 'Campo obligatorio' })} placeholder="Ej: San Gil" />
-              </Field>
-            </div>
-            <div className="mt-5">
-              <Field label="Productos o Servicios Comercializados" required error={errors.productosServicios?.message}>
-                <Textarea rows={3} {...register('productosServicios', { required: 'Campo obligatorio' })} placeholder="Describe brevemente qué productos o servicios ofrece tu empresa..." />
-              </Field>
-            </div>
-            <div className="flex justify-end mt-8">
-              <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg">
-                Siguiente <ChevronRight className="w-5 h-5" />
-              </motion.button>
-            </div>
-          </div>
-        </div>
-
-        {/* PASO 2 */}
-        <div style={{ display: step === 2 ? 'block' : 'none' }}>
-          <div className="space-y-6">
+        {/* 🔥 SOLUCIÓN: Usar position absolute en lugar de display none */}
+        <div className="relative">
+          {/* PASO 1 */}
+          <div style={{ 
+            position: step === 1 ? 'relative' : 'absolute',
+            visibility: step === 1 ? 'visible' : 'hidden',
+            opacity: step === 1 ? 1 : 0,
+            pointerEvents: step === 1 ? 'auto' : 'none',
+            width: '100%'
+          }}>
             <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2"><UserCheck className="w-5 h-5 text-primary-500" /> Representante Legal</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><Building2 className="w-5 h-5 text-primary-500" /> Información de la Empresa</h3>
               <div className="grid md:grid-cols-2 gap-5">
-                <Field label="Primer Nombre" required error={errors.repPrimerNombre?.message}>
-                  <Input {...register('repPrimerNombre', { required: 'Obligatorio' })} />
+                <Field label="Razón Social" required error={errors.razonSocial?.message}>
+                  <Input {...register('razonSocial', { required: 'Campo obligatorio' })} placeholder="Ej: Empresa S.A.S" />
                 </Field>
-                <Field label="Segundo Nombre">
-                  <Input {...register('repSegundoNombre')} />
+                <Field label="Nombre Comercial" required error={errors.nombreComercial?.message}>
+                  <Input {...register('nombreComercial', { required: 'Campo obligatorio' })} placeholder="Nombre que usa el negocio" />
                 </Field>
-                <Field label="Primer Apellido" required error={errors.repPrimerApellido?.message}>
-                  <Input {...register('repPrimerApellido', { required: 'Obligatorio' })} />
+                <Field label="NIT" required error={errors.nit?.message}>
+                  <Input {...register('nit', { required: 'Campo obligatorio' })} placeholder="123456789-0" />
                 </Field>
-                <Field label="Segundo Apellido">
-                  <Input {...register('repSegundoApellido')} />
+                <Field label="Matrícula Mercantil N°" required error={errors.matriculaMercantil?.message}>
+                  <Input {...register('matriculaMercantil', { required: 'Campo obligatorio' })} />
                 </Field>
-                <Field label="Cédula" required error={errors.repCedula?.message}>
-                  <Input {...register('repCedula', { required: 'Obligatorio' })} />
+                <Field label="Código CIIU" required error={errors.codigoCIIU?.message}>
+                  <Input {...register('codigoCIIU', { required: 'Campo obligatorio' })} placeholder="Ej: 4711" />
                 </Field>
-                <Field label="Teléfono" required error={errors.repTelefono?.message}>
-                  <Input type="tel" {...register('repTelefono', { required: 'Obligatorio' })} />
-                </Field>
-                <div className="md:col-span-2">
-                  <Field label="Correo electrónico" required error={errors.repEmail?.message}>
-                    <Input type="email" {...register('repEmail', { required: 'Obligatorio' })} />
-                  </Field>
-                </div>
-              </div>
-            </div>
-
-            {[{ title: 'Gerente', prefix: 'gerente' }, { title: 'Asistente de Gerencia', prefix: 'asistente' }, { title: 'Dr. Recurso Humano', prefix: 'rrhh' }, { title: 'Jefe / Jefa de Cartera', prefix: 'cartera' }].map(({ title, prefix }) => (
-              <div key={prefix} className="bg-white rounded-2xl border-2 border-gray-100 p-6 shadow-sm hover:border-gray-200 transition-colors">
-                <h3 className="text-base font-bold text-gray-700 mb-4">{title} <span className="text-gray-400 font-normal text-sm">(opcional)</span></h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="md:col-span-1"><Input {...register(`${prefix}Nombre`)} placeholder="Nombre completo" /></div>
-                  <div><Input type="tel" {...register(`${prefix}Telefono`)} placeholder="Teléfono" /></div>
-                  <div><Input type="email" {...register(`${prefix}Email`)} placeholder="Correo electrónico" /></div>
-                </div>
-              </div>
-            ))}
-
-            <div className="flex justify-between">
-              <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">Anterior</motion.button>
-              <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">Siguiente <ChevronRight className="w-5 h-5" /></motion.button>
-            </div>
-          </div>
-        </div>
-
-        {/* PASO 3 */}
-        <div style={{ display: step === 3 ? 'block' : 'none' }}>
-          <div className="space-y-6">
-            <div className="bg-primary-50 border-2 border-primary-100 rounded-2xl p-5">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" {...register('serviciosSocializados')} className="mt-1 w-4 h-4 accent-primary-500" />
-                <span className="text-sm font-semibold text-gray-700">Me fueron socializados los servicios y beneficios del portafolio de Fenalco Santander.</span>
-              </label>
-            </div>
-
-            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-800 mb-1">Referencias Comerciales</h3>
-              <p className="text-sm text-gray-500 mb-5">Empresas con las que tiene relación como cliente o proveedor (opcional)</p>
-              {[1, 2].map(n => (
-                <div key={n} className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-primary-100 transition-colors">
-                  <p className="text-sm font-bold text-gray-600 mb-3">Referencia {n}</p>
-                  <div className="grid md:grid-cols-3 gap-3">
-                    <Input {...register(`ref${n}Nombre`)} placeholder="Nombre empresa" />
-                    <Input {...register(`ref${n}Direccion`)} placeholder="Dirección" />
-                    <Input {...register(`ref${n}Telefono`)} placeholder="Teléfono" />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-800 mb-1">Refiera una empresa</h3>
-              <p className="text-sm text-gray-500 mb-5">¡Obtenga beneficios por referir empresas a Fenalco! (opcional)</p>
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="grid md:grid-cols-2 gap-3">
-                  <Input {...register('refiere1Nombre')} placeholder="Nombre empresa" />
-                  <Input {...register('refiere1Direccion')} placeholder="Dirección" />
-                  <Input type="email" {...register('refiere1Email')} placeholder="Correo electrónico" />
-                  <Input {...register('refiere1Telefono')} placeholder="Teléfono" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-800 mb-5"><FileText className="inline w-5 h-5 text-primary-500 mr-2" />Documentos Requeridos</h3>
-              <div className="space-y-4">
-                {[{ name: 'docRUT', label: 'RUT', hint: 'Registro Único Tributario' }, { name: 'docCamara', label: 'Cámara de Comercio', hint: 'No mayor a 30 días' }, { name: 'docRepresentante', label: 'Cédula Representante Legal', hint: 'Ambos lados' }, { name: 'docRenta', label: 'Declaración de Renta', hint: 'Último año' }].map(doc => (
-                  <div key={doc.name} className="flex items-center gap-4 p-4 border-2 border-dashed border-gray-200 rounded-xl hover:border-primary-300 hover:bg-primary-50/30 transition-all">
-                    <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0"><FileText className="w-5 h-5 text-primary-500" /></div>
-                    <div className="flex-grow min-w-0">
-                      <p className="text-sm font-bold text-gray-700">{doc.label} <span className="text-red-500">*</span></p>
-                      <p className="text-xs text-gray-400">{doc.hint}</p>
-                      {errors[doc.name] && <p className="text-red-500 text-xs mt-0.5">{errors[doc.name].message}</p>}
-                    </div>
-                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" {...register(doc.name, { required: 'Documento requerido' })} className="text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-between">
-              <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">Anterior</motion.button>
-              <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">Siguiente <ChevronRight className="w-5 h-5" /></motion.button>
-            </div>
-          </div>
-        </div>
-
-        {/* PASO 4 */}
-        <div style={{ display: step === 4 ? 'block' : 'none' }}>
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-800 mb-5"><CreditCard className="inline w-5 h-5 text-primary-500 mr-2" />Forma de Pago</h3>
-              <div className="grid md:grid-cols-3 gap-5">
-                <Field label="Periodicidad de Facturación" required error={errors.periodicidad?.message}>
-                  <Select {...register('periodicidad', { required: 'Obligatorio' })}>
+                <Field label="Naturaleza del Cliente">
+                  <Select {...register('naturalezaCliente')}>
                     <option value="">Selecciona</option>
-                    <option value="mensual">Mensual</option>
-                    <option value="trimestral">Trimestral</option>
-                    <option value="semestral">Semestral</option>
-                    <option value="anual">Anual</option>
+                    <option value="persona_natural">Persona Natural</option>
+                    <option value="persona_juridica">Persona Jurídica</option>
                   </Select>
                 </Field>
-                <Field label="N° de Empleados" required error={errors.numEmpleadosPago?.message}>
-                  <Input type="number" {...register('numEmpleadosPago', { required: 'Obligatorio' })} placeholder="Ej: 5" />
+                <Field label="Sector" required error={errors.sector?.message}>
+                  <Select {...register('sector', { required: 'Campo obligatorio' })}>
+                    <option value="">Selecciona un sector</option>
+                    <option value="alimentos">Alimentos y Bebidas</option>
+                    <option value="tecnologia">Tecnología</option>
+                    <option value="textil">Textil y Confección</option>
+                    <option value="construccion">Construcción</option>
+                    <option value="salud">Salud</option>
+                    <option value="comercio">Comercio al por menor</option>
+                    <option value="comercio_mayor">Comercio al por mayor</option>
+                    <option value="turismo">Turismo y Hotelería</option>
+                    <option value="servicios">Servicios Profesionales</option>
+                    <option value="educacion">Educación</option>
+                    <option value="otro">Otro</option>
+                  </Select>
                 </Field>
-                <Field label="Ventas Anuales (COP)" required error={errors.ventas?.message}>
-                  <Input type="number" {...register('ventas', { required: 'Obligatorio' })} placeholder="Ej: 50000000" />
+                <Field label="Sub Sector">
+                  <Input {...register('subSector')} placeholder="Opcional" />
+                </Field>
+                <Field label="N° de Empleados" required error={errors.numEmpleados?.message}>
+                  <Input type="number" {...register('numEmpleados', { required: 'Campo obligatorio', min: { value: 1, message: 'Mínimo 1' } })} placeholder="Ej: 5" />
+                </Field>
+                <Field label="Teléfono Fijo">
+                  <Input type="tel" {...register('telefonoFijo')} placeholder="Ej: 6077123456" />
+                </Field>
+                <Field label="Celular" required error={errors.celular?.message}>
+                  <Input type="tel" {...register('celular', { required: 'Campo obligatorio' })} placeholder="Ej: 3185840599" />
+                </Field>
+                <Field label="Correo Electrónico" required error={errors.email?.message}>
+                  <Input type="email" {...register('email', { required: 'Campo obligatorio', pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' } })} placeholder="empresa@correo.com" />
                 </Field>
               </div>
               <div className="mt-5">
-                <Field label="Correo para Facturación Electrónica" required error={errors.emailFacturacion?.message}>
-                  <Input type="email" {...register('emailFacturacion', { required: 'Obligatorio' })} placeholder="facturacion@empresa.com" />
+                <Field label="Dirección" required error={errors.direccion?.message}>
+                  <Input {...register('direccion', { required: 'Campo obligatorio' })} placeholder="Calle, Carrera, número" />
                 </Field>
               </div>
-              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800"><AlertCircle className="inline w-4 h-4 mr-1.5" />La tarifa está sujeta a verificación por parte de FENALCO. La membresía se paga una única vez, siempre que el afiliado permanezca vinculado.</div>
+              <div className="mt-5">
+                <Field label="Ciudad" required error={errors.ciudad?.message}>
+                  <Input {...register('ciudad', { required: 'Campo obligatorio' })} placeholder="Ej: San Gil" />
+                </Field>
+              </div>
+              <div className="mt-5">
+                <Field label="Productos o Servicios Comercializados" required error={errors.productosServicios?.message}>
+                  <Textarea rows={3} {...register('productosServicios', { required: 'Campo obligatorio' })} placeholder="Describe brevemente qué productos o servicios ofrece tu empresa..." />
+                </Field>
+              </div>
+              <div className="flex justify-end mt-8">
+                <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg">
+                  Siguiente <ChevronRight className="w-5 h-5" />
+                </motion.button>
+              </div>
             </div>
+          </div>
 
-            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm space-y-5">
-              <h3 className="text-lg font-bold text-gray-800">Autorizaciones y Declaraciones</h3>
-              {[{ name: 'autorizacionDatos', title: 'Autorización Tratamiento de Datos', text: 'Autorizo a FENALCO SANTANDER (NIT 890201284-7) para que recopile y trate mi información personal según la ley 1581 de 2012, con la finalidad de propender por el desarrollo del comercio y los comerciantes de la región.' }, { name: 'declaracionBienes', title: 'Declaración de Origen de Bienes', text: 'Declaro que mis recursos provienen del giro ordinario de mis actividades y no son fruto de actividades ilícitas. Cumplo con las normas sobre prevención de lavado de activos y financiación del terrorismo (LA/FT).' }, { name: 'clausulaPermanencia', title: 'Cláusula de Permanencia', text: 'Me comprometo a permanecer en la agremiación por mínimo un (1) año, prorrogable automáticamente. Para retiro, notificaré con 30 días calendario de antelación.' }].map(auth => (
-                <div key={auth.name} className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:border-primary-100 transition-colors">
-                  <h4 className="font-bold text-sm text-gray-700 mb-2">{auth.title}</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed mb-3">{auth.text}</p>
-                  <label className="flex items-center gap-2.5 cursor-pointer">
-                    <input type="checkbox" {...register(auth.name, { required: 'Debes aceptar este campo' })} className="w-4 h-4 accent-primary-500" />
-                    <span className="text-sm font-semibold text-gray-700">Acepto <span className="text-red-500">*</span></span>
-                  </label>
-                  {errors[auth.name] && <p className="text-red-500 text-xs mt-1">{errors[auth.name].message}</p>}
+          {/* PASO 2 */}
+          <div style={{ 
+            position: step === 2 ? 'relative' : 'absolute',
+            visibility: step === 2 ? 'visible' : 'hidden',
+            opacity: step === 2 ? 1 : 0,
+            pointerEvents: step === 2 ? 'auto' : 'none',
+            width: '100%',
+            top: step === 2 ? 'auto' : 0
+          }}>
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2"><UserCheck className="w-5 h-5 text-primary-500" /> Representante Legal</h3>
+                <div className="grid md:grid-cols-2 gap-5">
+                  <Field label="Primer Nombre" required error={errors.repPrimerNombre?.message}>
+                    <Input {...register('repPrimerNombre', { required: 'Obligatorio' })} />
+                  </Field>
+                  <Field label="Segundo Nombre">
+                    <Input {...register('repSegundoNombre')} />
+                  </Field>
+                  <Field label="Primer Apellido" required error={errors.repPrimerApellido?.message}>
+                    <Input {...register('repPrimerApellido', { required: 'Obligatorio' })} />
+                  </Field>
+                  <Field label="Segundo Apellido">
+                    <Input {...register('repSegundoApellido')} />
+                  </Field>
+                  <Field label="Cédula" required error={errors.repCedula?.message}>
+                    <Input {...register('repCedula', { required: 'Obligatorio' })} />
+                  </Field>
+                  <Field label="Teléfono" required error={errors.repTelefono?.message}>
+                    <Input type="tel" {...register('repTelefono', { required: 'Obligatorio' })} />
+                  </Field>
+                  <div className="md:col-span-2">
+                    <Field label="Correo electrónico" required error={errors.repEmail?.message}>
+                      <Input type="email" {...register('repEmail', { required: 'Obligatorio' })} />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+
+              {[{ title: 'Gerente', prefix: 'gerente' }, { title: 'Asistente de Gerencia', prefix: 'asistente' }, { title: 'Dr. Recurso Humano', prefix: 'rrhh' }, { title: 'Jefe / Jefa de Cartera', prefix: 'cartera' }].map(({ title, prefix }) => (
+                <div key={prefix} className="bg-white rounded-2xl border-2 border-gray-100 p-6 shadow-sm hover:border-gray-200 transition-colors">
+                  <h3 className="text-base font-bold text-gray-700 mb-4">{title} <span className="text-gray-400 font-normal text-sm">(opcional)</span></h3>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="md:col-span-1"><Input {...register(`${prefix}Nombre`)} placeholder="Nombre completo" /></div>
+                    <div><Input type="tel" {...register(`${prefix}Telefono`)} placeholder="Teléfono" /></div>
+                    <div><Input type="email" {...register(`${prefix}Email`)} placeholder="Correo electrónico" /></div>
+                  </div>
                 </div>
               ))}
-            </div>
 
-            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-800 mb-5">Firma Electrónica del Representante Legal</h3>
-              <div className="grid md:grid-cols-2 gap-5 mb-5">
-                <Field label="Nombre Completo" required error={errors.firmaNombre?.message}>
-                  <Input {...register('firmaNombre', { required: 'Obligatorio' })} placeholder="Nombre y apellidos completos" />
-                </Field>
-                <Field label="Cédula" required error={errors.firmaCedula?.message}>
-                  <Input {...register('firmaCedula', { required: 'Obligatorio' })} placeholder="Número de cédula" />
-                </Field>
+              <div className="flex justify-between">
+                <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">Anterior</motion.button>
+                <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">Siguiente <ChevronRight className="w-5 h-5" /></motion.button>
               </div>
-              <div className="bg-blue-50 border-2 border-blue-100 rounded-xl p-4">
+            </div>
+          </div>
+
+          {/* PASO 3 */}
+          <div style={{ 
+            position: step === 3 ? 'relative' : 'absolute',
+            visibility: step === 3 ? 'visible' : 'hidden',
+            opacity: step === 3 ? 1 : 0,
+            pointerEvents: step === 3 ? 'auto' : 'none',
+            width: '100%',
+            top: step === 3 ? 'auto' : 0
+          }}>
+            <div className="space-y-6">
+              <div className="bg-primary-50 border-2 border-primary-100 rounded-2xl p-5">
                 <label className="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox" {...register('firmaConsentimiento', { required: 'Debes aceptar para continuar' })} className="mt-1 w-4 h-4 accent-primary-500" />
-                  <span className="text-sm text-gray-700 leading-relaxed">Al marcar esta casilla confirmo que he leído y acepto todos los términos de afiliación a FENALCO Santander. Esta firma electrónica tiene la misma validez legal que una firma manuscrita. <span className="text-red-500">*</span></span>
+                  <input type="checkbox" {...register('serviciosSocializados')} className="mt-1 w-4 h-4 accent-primary-500" />
+                  <span className="text-sm font-semibold text-gray-700">Me fueron socializados los servicios y beneficios del portafolio de Fenalco Santander.</span>
                 </label>
-                {errors.firmaConsentimiento && <p className="text-red-500 text-xs mt-1.5">{errors.firmaConsentimiento.message}</p>}
+              </div>
+
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 mb-1">Referencias Comerciales</h3>
+                <p className="text-sm text-gray-500 mb-5">Empresas con las que tiene relación como cliente o proveedor (opcional)</p>
+                {[1, 2].map(n => (
+                  <div key={n} className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-primary-100 transition-colors">
+                    <p className="text-sm font-bold text-gray-600 mb-3">Referencia {n}</p>
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <Input {...register(`ref${n}Nombre`)} placeholder="Nombre empresa" />
+                      <Input {...register(`ref${n}Direccion`)} placeholder="Dirección" />
+                      <Input {...register(`ref${n}Telefono`)} placeholder="Teléfono" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 mb-1">Refiera una empresa</h3>
+                <p className="text-sm text-gray-500 mb-5">¡Obtenga beneficios por referir empresas a Fenalco! (opcional)</p>
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <Input {...register('refiere1Nombre')} placeholder="Nombre empresa" />
+                    <Input {...register('refiere1Direccion')} placeholder="Dirección" />
+                    <Input type="email" {...register('refiere1Email')} placeholder="Correo electrónico" />
+                    <Input {...register('refiere1Telefono')} placeholder="Teléfono" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 mb-5"><FileText className="inline w-5 h-5 text-primary-500 mr-2" />Documentos Requeridos</h3>
+                <div className="space-y-4">
+                  {[{ name: 'docRUT', label: 'RUT', hint: 'Registro Único Tributario' }, { name: 'docCamara', label: 'Cámara de Comercio', hint: 'No mayor a 30 días' }, { name: 'docRepresentante', label: 'Cédula Representante Legal', hint: 'Ambos lados' }, { name: 'docRenta', label: 'Declaración de Renta', hint: 'Último año' }].map(doc => (
+                    <div key={doc.name} className="flex items-center gap-4 p-4 border-2 border-dashed border-gray-200 rounded-xl hover:border-primary-300 hover:bg-primary-50/30 transition-all">
+                      <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0"><FileText className="w-5 h-5 text-primary-500" /></div>
+                      <div className="flex-grow min-w-0">
+                        <p className="text-sm font-bold text-gray-700">{doc.label} <span className="text-red-500">*</span></p>
+                        <p className="text-xs text-gray-400">{doc.hint}</p>
+                        {errors[doc.name] && <p className="text-red-500 text-xs mt-0.5">{errors[doc.name].message}</p>}
+                      </div>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" {...register(doc.name, { required: 'Documento requerido' })} className="text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-between">
+                <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">Anterior</motion.button>
+                <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">Siguiente <ChevronRight className="w-5 h-5" /></motion.button>
               </div>
             </div>
+          </div>
 
-            <div className="flex justify-between">
-              <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">Anterior</motion.button>
-              <motion.button type="submit" disabled={isSubmitting} whileHover={{ scale: isSubmitting ? 1 : 1.03, y: isSubmitting ? 0 : -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 text-white font-bold px-10 py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg">
-                {isSubmitting ? (<><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Enviando...</>) : (<><CheckCircle className="w-5 h-5" /> Enviar Solicitud</>)}
-              </motion.button>
+          {/* PASO 4 */}
+          <div style={{ 
+            position: step === 4 ? 'relative' : 'absolute',
+            visibility: step === 4 ? 'visible' : 'hidden',
+            opacity: step === 4 ? 1 : 0,
+            pointerEvents: step === 4 ? 'auto' : 'none',
+            width: '100%',
+            top: step === 4 ? 'auto' : 0
+          }}>
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 mb-5"><CreditCard className="inline w-5 h-5 text-primary-500 mr-2" />Forma de Pago</h3>
+                <div className="grid md:grid-cols-3 gap-5">
+                  <Field label="Periodicidad de Facturación" required error={errors.periodicidad?.message}>
+                    <Select {...register('periodicidad', { required: 'Obligatorio' })}>
+                      <option value="">Selecciona</option>
+                      <option value="mensual">Mensual</option>
+                      <option value="trimestral">Trimestral</option>
+                      <option value="semestral">Semestral</option>
+                      <option value="anual">Anual</option>
+                    </Select>
+                  </Field>
+                  <Field label="N° de Empleados" required error={errors.numEmpleadosPago?.message}>
+                    <Input type="number" {...register('numEmpleadosPago', { required: 'Obligatorio' })} placeholder="Ej: 5" />
+                  </Field>
+                  <Field label="Ventas Anuales (COP)" required error={errors.ventas?.message}>
+                    <Input type="number" {...register('ventas', { required: 'Obligatorio' })} placeholder="Ej: 50000000" />
+                  </Field>
+                </div>
+                <div className="mt-5">
+                  <Field label="Correo para Facturación Electrónica" required error={errors.emailFacturacion?.message}>
+                    <Input type="email" {...register('emailFacturacion', { required: 'Obligatorio' })} placeholder="facturacion@empresa.com" />
+                  </Field>
+                </div>
+                <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800"><AlertCircle className="inline w-4 h-4 mr-1.5" />La tarifa está sujeta a verificación por parte de FENALCO. La membresía se paga una única vez, siempre que el afiliado permanezca vinculado.</div>
+              </div>
+
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm space-y-5">
+                <h3 className="text-lg font-bold text-gray-800">Autorizaciones y Declaraciones</h3>
+                {[{ name: 'autorizacionDatos', title: 'Autorización Tratamiento de Datos', text: 'Autorizo a FENALCO SANTANDER (NIT 890201284-7) para que recopile y trate mi información personal según la ley 1581 de 2012, con la finalidad de propender por el desarrollo del comercio y los comerciantes de la región.' }, { name: 'declaracionBienes', title: 'Declaración de Origen de Bienes', text: 'Declaro que mis recursos provienen del giro ordinario de mis actividades y no son fruto de actividades ilícitas. Cumplo con las normas sobre prevención de lavado de activos y financiación del terrorismo (LA/FT).' }, { name: 'clausulaPermanencia', title: 'Cláusula de Permanencia', text: 'Me comprometo a permanecer en la agremiación por mínimo un (1) año, prorrogable automáticamente. Para retiro, notificaré con 30 días calendario de antelación.' }].map(auth => (
+                  <div key={auth.name} className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:border-primary-100 transition-colors">
+                    <h4 className="font-bold text-sm text-gray-700 mb-2">{auth.title}</h4>
+                    <p className="text-xs text-gray-500 leading-relaxed mb-3">{auth.text}</p>
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <input type="checkbox" {...register(auth.name, { required: 'Debes aceptar este campo' })} className="w-4 h-4 accent-primary-500" />
+                      <span className="text-sm font-semibold text-gray-700">Acepto <span className="text-red-500">*</span></span>
+                    </label>
+                    {errors[auth.name] && <p className="text-red-500 text-xs mt-1">{errors[auth.name].message}</p>}
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 mb-5">Firma Electrónica del Representante Legal</h3>
+                <div className="grid md:grid-cols-2 gap-5 mb-5">
+                  <Field label="Nombre Completo" required error={errors.firmaNombre?.message}>
+                    <Input {...register('firmaNombre', { required: 'Obligatorio' })} placeholder="Nombre y apellidos completos" />
+                  </Field>
+                  <Field label="Cédula" required error={errors.firmaCedula?.message}>
+                    <Input {...register('firmaCedula', { required: 'Obligatorio' })} placeholder="Número de cédula" />
+                  </Field>
+                </div>
+                <div className="bg-blue-50 border-2 border-blue-100 rounded-xl p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" {...register('firmaConsentimiento', { required: 'Debes aceptar para continuar' })} className="mt-1 w-4 h-4 accent-primary-500" />
+                    <span className="text-sm text-gray-700 leading-relaxed">Al marcar esta casilla confirmo que he leído y acepto todos los términos de afiliación a FENALCO Santander. Esta firma electrónica tiene la misma validez legal que una firma manuscrita. <span className="text-red-500">*</span></span>
+                  </label>
+                  {errors.firmaConsentimiento && <p className="text-red-500 text-xs mt-1.5">{errors.firmaConsentimiento.message}</p>}
+                </div>
+              </div>
+
+              <div className="flex justify-between">
+                <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">Anterior</motion.button>
+                <motion.button type="submit" disabled={isSubmitting} whileHover={{ scale: isSubmitting ? 1 : 1.03, y: isSubmitting ? 0 : -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 text-white font-bold px-10 py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg">
+                  {isSubmitting ? (<><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Enviando...</>) : (<><CheckCircle className="w-5 h-5" /> Enviar Solicitud</>)}
+                </motion.button>
+              </div>
             </div>
           </div>
         </div>
