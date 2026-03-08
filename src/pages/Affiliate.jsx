@@ -109,8 +109,8 @@ const PaymentSection = () => (
 );
 
 const AffiliateForm = () => {
-  // ✅ CORRECCIÓN: Agregar trigger para validación paso por paso
-  const { register, handleSubmit, formState: { errors }, reset, trigger } = useForm({ mode: 'onChange' });
+  // ✅ SOLUCIÓN SIMPLE: Sin validación por pasos, solo al enviar
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -118,37 +118,11 @@ const AffiliateForm = () => {
   const formTopRef = useRef(null);
   const scrollToFormTop = () => { setTimeout(() => { formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); };
 
-  // ✅ CORRECCIÓN: Validar SOLO campos del paso actual antes de avanzar
-  const validateAndProceed = async () => {
-    let fieldsToValidate = [];
-    
-    if (step === 1) {
-      fieldsToValidate = ['razonSocial', 'nombreComercial', 'nit', 'matriculaMercantil', 'codigoCIIU', 'sector', 'numEmpleados', 'celular', 'email', 'direccion', 'ciudad', 'productosServicios'];
-    } else if (step === 2) {
-      fieldsToValidate = ['repPrimerNombre', 'repPrimerApellido', 'repCedula', 'repTelefono', 'repEmail'];
-    } else if (step === 3) {
-      fieldsToValidate = ['docRUT', 'docCamara', 'docRepresentante', 'docRenta'];
-    }
-    
-    const isValid = await trigger(fieldsToValidate);
-    if (isValid) {
-      setStep(s => s + 1);
-      scrollToFormTop();
-    } else {
-      toast.error('Por favor completa todos los campos obligatorios');
-    }
-  };
+  // ✅ SOLUCIÓN: Simplemente avanza sin validar
+  const goNext = () => { setStep(s => s + 1); scrollToFormTop(); };
+  const goPrev = () => { setStep(s => s - 1); scrollToFormTop(); };
 
-  // ✅ CORRECCIÓN: Validar SOLO paso 4 antes de enviar
   const onSubmit = async (data) => {
-    const step4Fields = ['periodicidad', 'numEmpleadosPago', 'ventas', 'emailFacturacion', 'autorizacionDatos', 'declaracionBienes', 'clausulaPermanencia', 'firmaNombre', 'firmaCedula', 'firmaConsentimiento'];
-    const isStep4Valid = await trigger(step4Fields);
-    
-    if (!isStep4Valid) {
-      toast.error('Por favor completa todos los campos obligatorios del paso 4');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       console.log('📤 Enviando solicitud al backend...');
@@ -177,8 +151,6 @@ const AffiliateForm = () => {
       setIsSubmitting(false);
     }
   };
-
-  const goPrev = () => { setStep(s => s - 1); scrollToFormTop(); };
 
   if (submitted) {
     return (
@@ -287,7 +259,7 @@ const AffiliateForm = () => {
               </Field>
             </div>
             <div className="flex justify-end mt-8">
-              <motion.button type="button" onClick={validateAndProceed} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg">
+              <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg">
                 Siguiente <ChevronRight className="w-5 h-5" />
               </motion.button>
             </div>
@@ -339,7 +311,7 @@ const AffiliateForm = () => {
 
             <div className="flex justify-between">
               <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">Anterior</motion.button>
-              <motion.button type="button" onClick={validateAndProceed} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">Siguiente <ChevronRight className="w-5 h-5" /></motion.button>
+              <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">Siguiente <ChevronRight className="w-5 h-5" /></motion.button>
             </div>
           </div>
         </div>
@@ -401,7 +373,7 @@ const AffiliateForm = () => {
 
             <div className="flex justify-between">
               <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">Anterior</motion.button>
-              <motion.button type="button" onClick={validateAndProceed} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">Siguiente <ChevronRight className="w-5 h-5" /></motion.button>
+              <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">Siguiente <ChevronRight className="w-5 h-5" /></motion.button>
             </div>
           </div>
         </div>
@@ -482,6 +454,7 @@ const AffiliateForm = () => {
     </div>
   );
 };
+
 const Affiliate = () => {
   const [activeTab, setActiveTab] = useState('formulario');
   const tabsSectionRef = useRef(null);
