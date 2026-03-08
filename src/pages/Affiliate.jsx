@@ -275,7 +275,7 @@ const onSubmit = async (data) => {
   setIsSubmitting(true);
 
   try {
-    console.log('📤 Enviando solicitud de afiliación al backend...');
+    console.log('📤 Enviando solicitud al backend...');
 
     const formData = new FormData();
 
@@ -283,16 +283,12 @@ const onSubmit = async (data) => {
       if (value instanceof FileList) {
         if (value.length > 0) {
           formData.append(key, value[0]);
-          console.log(`📎 Archivo agregado: ${key} = ${value[0].name}`);
         }
-      } 
-      else if (value !== undefined && value !== null && value !== '') {
+      } else if (value !== undefined && value !== null && value !== '') {
         formData.append(key, String(value));
       }
     });
 
-    console.log('🚀 Enviando a:', `${import.meta.env.VITE_API_URL}/api/affiliations`);
-    
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/affiliations`, {
       method: 'POST',
       body: formData,
@@ -304,23 +300,17 @@ const onSubmit = async (data) => {
       throw new Error(result.error || 'Error al enviar la solicitud');
     }
 
-    console.log('✅ Solicitud enviada exitosamente:', result);
-
-    toast.success('¡Solicitud enviada! Pronto recibirás un correo de confirmación.');
-    
+    toast.success('¡Solicitud enviada! Recibirás un correo de confirmación.');
     setSubmitted(true);
     reset();
-    
+
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
 
   } catch (error) {
-    console.error('❌ Error al enviar afiliación:', error);
-    
-    toast.error(
-      error.message || 'Ocurrió un error al enviar la solicitud. Por favor intenta de nuevo.'
-    );
+    console.error('❌ Error:', error);
+    toast.error(error.message || 'Error al enviar. Intenta de nuevo.');
   } finally {
     setIsSubmitting(false);
   }
