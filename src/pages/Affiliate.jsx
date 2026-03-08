@@ -151,7 +151,6 @@ const PaymentSection = () => (
         </p>
       </motion.div>
 
-      {/* Cuentas bancarias — MEJORADO con hover elevación */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         {BANK_ACCOUNTS.map((account, i) => (
           <motion.div
@@ -194,7 +193,6 @@ const PaymentSection = () => (
         ))}
       </div>
 
-      {/* Instrucciones */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -263,7 +261,6 @@ const AffiliateForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  // ── FIX SCROLL: ref al tope del form, no window.scrollTo ──
   const formTopRef = useRef(null);
   const scrollToFormTop = () => {
     setTimeout(() => {
@@ -271,50 +268,50 @@ const AffiliateForm = () => {
     }, 50);
   };
 
-const onSubmit = async (data) => {
-  setIsSubmitting(true);
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
 
-  try {
-    console.log('📤 Enviando solicitud al backend...');
+    try {
+      console.log('📤 Enviando solicitud al backend...');
 
-    const formData = new FormData();
+      const formData = new FormData();
 
-    Object.entries(data).forEach(([key, value]) => {
-      if (value instanceof FileList) {
-        if (value.length > 0) {
-          formData.append(key, value[0]);
+      Object.entries(data).forEach(([key, value]) => {
+        if (value instanceof FileList) {
+          if (value.length > 0) {
+            formData.append(key, value[0]);
+          }
+        } else if (value !== undefined && value !== null && value !== '') {
+          formData.append(key, String(value));
         }
-      } else if (value !== undefined && value !== null && value !== '') {
-        formData.append(key, String(value));
+      });
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/affiliations`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error al enviar la solicitud');
       }
-    });
 
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/affiliations`, {
-      method: 'POST',
-      body: formData,
-    });
+      toast.success('¡Solicitud enviada! Recibirás un correo de confirmación.');
+      setSubmitted(true);
+      reset();
 
-    const result = await response.json();
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
 
-    if (!response.ok) {
-      throw new Error(result.error || 'Error al enviar la solicitud');
+    } catch (error) {
+      console.error('❌ Error:', error);
+      toast.error(error.message || 'Error al enviar. Intenta de nuevo.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast.success('¡Solicitud enviada! Recibirás un correo de confirmación.');
-    setSubmitted(true);
-    reset();
-
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
-
-  } catch (error) {
-    console.error('❌ Error:', error);
-    toast.error(error.message || 'Error al enviar. Intenta de nuevo.');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const goNext = () => { setStep(s => s + 1); scrollToFormTop(); };
   const goPrev = () => { setStep(s => s - 1); scrollToFormTop(); };
@@ -352,10 +349,9 @@ const onSubmit = async (data) => {
 
   return (
     <div>
-      {/* Anchor invisible para scroll — FIX */}
       <div ref={formTopRef} className="scroll-mt-40" />
 
-      {/* Progress — MEJORADO con motion animado */}
+      {/* Progress */}
       <div className="mb-10">
         <div className="flex items-center justify-between">
           {STEPS.map((s, i) => (
@@ -393,376 +389,374 @@ const onSubmit = async (data) => {
         <p className="text-center text-sm text-gray-400 mt-4">Paso {step} de {STEPS.length}</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <AnimatePresence mode="wait">
+{/* ═══════════════════════════════════════════════════════════════════════════
+    CONTINÚA EN PARTE 2
+    ═══════════════════════════════════════════════════════════════════════════ */}
+    {/* ═══════════════════════════════════════════════════════════════════════════
+    PARTE 2 - CONTINUACIÓN DEL FORMULARIO
+    
+    INSTRUCCIÓN: Pega esto DESPUÉS del comentario "CONTINÚA EN PARTE 2" de la Parte 1
+    ═══════════════════════════════════════════════════════════════════════════ */}
 
-          {/* ── PASO 1 ── */}
-          {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.25 }}>
-              <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-                <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-primary-500" /> Información de la Empresa
-                </h3>
-                <div className="grid md:grid-cols-2 gap-5">
-                  <Field label="Razón Social" required error={errors.razonSocial?.message}>
-                    <Input {...register('razonSocial', { required: 'Campo obligatorio' })} placeholder="Ej: Empresa S.A.S" />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* ══════════════ PASO 1 - SIEMPRE MONTADO ══════════════ */}
+        <div style={{ display: step === 1 ? 'block' : 'none' }}>
+          <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-primary-500" /> Información de la Empresa
+            </h3>
+            <div className="grid md:grid-cols-2 gap-5">
+              <Field label="Razón Social" required error={errors.razonSocial?.message}>
+                <Input {...register('razonSocial', { required: 'Campo obligatorio' })} placeholder="Ej: Empresa S.A.S" />
+              </Field>
+              <Field label="Nombre Comercial" required error={errors.nombreComercial?.message}>
+                <Input {...register('nombreComercial', { required: 'Campo obligatorio' })} placeholder="Nombre que usa el negocio" />
+              </Field>
+              <Field label="NIT" required error={errors.nit?.message}>
+                <Input {...register('nit', { required: 'Campo obligatorio' })} placeholder="123456789-0" />
+              </Field>
+              <Field label="Matrícula Mercantil N°" required error={errors.matriculaMercantil?.message}>
+                <Input {...register('matriculaMercantil', { required: 'Campo obligatorio' })} />
+              </Field>
+              <Field label="Código CIIU" required error={errors.codigoCIIU?.message}>
+                <Input {...register('codigoCIIU', { required: 'Campo obligatorio' })} placeholder="Ej: 4711" />
+              </Field>
+              <Field label="Naturaleza del Cliente">
+                <Select {...register('naturalezaCliente')}>
+                  <option value="">Selecciona</option>
+                  <option value="persona_natural">Persona Natural</option>
+                  <option value="persona_juridica">Persona Jurídica</option>
+                </Select>
+              </Field>
+              <Field label="Sector" required error={errors.sector?.message}>
+                <Select {...register('sector', { required: 'Campo obligatorio' })}>
+                  <option value="">Selecciona un sector</option>
+                  <option value="alimentos">Alimentos y Bebidas</option>
+                  <option value="tecnologia">Tecnología</option>
+                  <option value="textil">Textil y Confección</option>
+                  <option value="construccion">Construcción</option>
+                  <option value="salud">Salud</option>
+                  <option value="comercio">Comercio al por menor</option>
+                  <option value="comercio_mayor">Comercio al por mayor</option>
+                  <option value="turismo">Turismo y Hotelería</option>
+                  <option value="servicios">Servicios Profesionales</option>
+                  <option value="educacion">Educación</option>
+                  <option value="otro">Otro</option>
+                </Select>
+              </Field>
+              <Field label="Sub Sector">
+                <Input {...register('subSector')} placeholder="Opcional" />
+              </Field>
+              <Field label="N° de Empleados" required error={errors.numEmpleados?.message}>
+                <Input type="number" {...register('numEmpleados', { required: 'Campo obligatorio', min: { value: 1, message: 'Mínimo 1' } })} placeholder="Ej: 5" />
+              </Field>
+              <Field label="Teléfono Fijo">
+                <Input type="tel" {...register('telefonoFijo')} placeholder="Ej: 6077123456" />
+              </Field>
+              <Field label="Celular" required error={errors.celular?.message}>
+                <Input type="tel" {...register('celular', { required: 'Campo obligatorio' })} placeholder="Ej: 3185840599" />
+              </Field>
+              <Field label="Correo Electrónico" required error={errors.email?.message}>
+                <Input type="email" {...register('email', { required: 'Campo obligatorio', pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' } })} placeholder="empresa@correo.com" />
+              </Field>
+            </div>
+            <div className="mt-5">
+              <Field label="Dirección" required error={errors.direccion?.message}>
+                <Input {...register('direccion', { required: 'Campo obligatorio' })} placeholder="Calle, Carrera, número" />
+              </Field>
+            </div>
+            <div className="mt-5">
+              <Field label="Ciudad" required error={errors.ciudad?.message}>
+                <Input {...register('ciudad', { required: 'Campo obligatorio' })} placeholder="Ej: San Gil" />
+              </Field>
+            </div>
+            <div className="mt-5">
+              <Field label="Productos o Servicios Comercializados" required error={errors.productosServicios?.message}>
+                <Textarea rows={3} {...register('productosServicios', { required: 'Campo obligatorio' })} placeholder="Describe brevemente qué productos o servicios ofrece tu empresa..." />
+              </Field>
+            </div>
+            <div className="flex justify-end mt-8">
+              <motion.button
+                type="button"
+                onClick={goNext}
+                whileHover={{ scale: 1.03, y: -1 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg"
+              >
+                Siguiente <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {/* ══════════════ PASO 2 - SIEMPRE MONTADO ══════════════ */}
+        <div style={{ display: step === 2 ? 'block' : 'none' }}>
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-primary-500" /> Representante Legal
+              </h3>
+              <div className="grid md:grid-cols-2 gap-5">
+                <Field label="Primer Nombre" required error={errors.repPrimerNombre?.message}>
+                  <Input {...register('repPrimerNombre', { required: 'Obligatorio' })} />
+                </Field>
+                <Field label="Segundo Nombre">
+                  <Input {...register('repSegundoNombre')} />
+                </Field>
+                <Field label="Primer Apellido" required error={errors.repPrimerApellido?.message}>
+                  <Input {...register('repPrimerApellido', { required: 'Obligatorio' })} />
+                </Field>
+                <Field label="Segundo Apellido">
+                  <Input {...register('repSegundoApellido')} />
+                </Field>
+                <Field label="Cédula" required error={errors.repCedula?.message}>
+                  <Input {...register('repCedula', { required: 'Obligatorio' })} />
+                </Field>
+                <Field label="Teléfono" required error={errors.repTelefono?.message}>
+                  <Input type="tel" {...register('repTelefono', { required: 'Obligatorio' })} />
+                </Field>
+                <div className="md:col-span-2">
+                  <Field label="Correo electrónico" required error={errors.repEmail?.message}>
+                    <Input type="email" {...register('repEmail', { required: 'Obligatorio' })} />
                   </Field>
-                  <Field label="Nombre Comercial" required error={errors.nombreComercial?.message}>
-                    <Input {...register('nombreComercial', { required: 'Campo obligatorio' })} placeholder="Nombre que usa el negocio" />
-                  </Field>
-                  <Field label="NIT" required error={errors.nit?.message}>
-                    <Input {...register('nit', { required: 'Campo obligatorio' })} placeholder="123456789-0" />
-                  </Field>
-                  <Field label="Matrícula Mercantil N°" required error={errors.matriculaMercantil?.message}>
-                    <Input {...register('matriculaMercantil', { required: 'Campo obligatorio' })} />
-                  </Field>
-                  <Field label="Código CIIU" required error={errors.codigoCIIU?.message}>
-                    <Input {...register('codigoCIIU', { required: 'Campo obligatorio' })} placeholder="Ej: 4711" />
-                  </Field>
-                  <Field label="Naturaleza del Cliente">
-                    <Select {...register('naturalezaCliente')}>
-                      <option value="">Selecciona</option>
-                      <option value="persona_natural">Persona Natural</option>
-                      <option value="persona_juridica">Persona Jurídica</option>
-                    </Select>
-                  </Field>
-                  <Field label="Sector" required error={errors.sector?.message}>
-                    <Select {...register('sector', { required: 'Campo obligatorio' })}>
-                      <option value="">Selecciona un sector</option>
-                      <option value="alimentos">Alimentos y Bebidas</option>
-                      <option value="tecnologia">Tecnología</option>
-                      <option value="textil">Textil y Confección</option>
-                      <option value="construccion">Construcción</option>
-                      <option value="salud">Salud</option>
-                      <option value="comercio">Comercio al por menor</option>
-                      <option value="comercio_mayor">Comercio al por mayor</option>
-                      <option value="turismo">Turismo y Hotelería</option>
-                      <option value="servicios">Servicios Profesionales</option>
-                      <option value="educacion">Educación</option>
-                      <option value="otro">Otro</option>
-                    </Select>
-                  </Field>
-                  <Field label="Sub Sector">
-                    <Input {...register('subSector')} placeholder="Opcional" />
-                  </Field>
-                  <Field label="N° de Empleados" required error={errors.numEmpleados?.message}>
-                    <Input type="number" {...register('numEmpleados', { required: 'Campo obligatorio', min: { value: 1, message: 'Mínimo 1' } })} placeholder="Ej: 5" />
-                  </Field>
-                  <Field label="Teléfono Fijo">
-                    <Input type="tel" {...register('telefonoFijo')} placeholder="Ej: 6077123456" />
-                  </Field>
-                  <Field label="Celular" required error={errors.celular?.message}>
-                    <Input type="tel" {...register('celular', { required: 'Campo obligatorio' })} placeholder="Ej: 3185840599" />
-                  </Field>
-                  <Field label="Correo Electrónico" required error={errors.email?.message}>
-                    <Input type="email" {...register('email', { required: 'Campo obligatorio', pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' } })} placeholder="empresa@correo.com" />
-                  </Field>
-                </div>
-                <div className="mt-5">
-                  <Field label="Dirección" required error={errors.direccion?.message}>
-                    <Input {...register('direccion', { required: 'Campo obligatorio' })} placeholder="Calle, Carrera, número" />
-                  </Field>
-                </div>
-                <div className="mt-5">
-                  <Field label="Ciudad" required error={errors.ciudad?.message}>
-                    <Input {...register('ciudad', { required: 'Campo obligatorio' })} placeholder="Ej: San Gil" />
-                  </Field>
-                </div>
-                <div className="mt-5">
-                  <Field label="Productos o Servicios Comercializados" required error={errors.productosServicios?.message}>
-                    <Textarea rows={3} {...register('productosServicios', { required: 'Campo obligatorio' })} placeholder="Describe brevemente qué productos o servicios ofrece tu empresa..." />
-                  </Field>
-                </div>
-                <div className="flex justify-end mt-8">
-                  <motion.button
-                    type="button"
-                    onClick={goNext}
-                    whileHover={{ scale: 1.03, y: -1 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg"
-                  >
-                    Siguiente <ChevronRight className="w-5 h-5" />
-                  </motion.button>
                 </div>
               </div>
-            </motion.div>
-          )}
+            </div>
 
-          {/* ── PASO 2 ── */}
-          {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.25 }}>
-              <div className="space-y-6">
-                <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-                    <UserCheck className="w-5 h-5 text-primary-500" /> Representante Legal
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-5">
-                    <Field label="Primer Nombre" required error={errors.repPrimerNombre?.message}>
-                      <Input {...register('repPrimerNombre', { required: 'Obligatorio' })} />
-                    </Field>
-                    <Field label="Segundo Nombre">
-                      <Input {...register('repSegundoNombre')} />
-                    </Field>
-                    <Field label="Primer Apellido" required error={errors.repPrimerApellido?.message}>
-                      <Input {...register('repPrimerApellido', { required: 'Obligatorio' })} />
-                    </Field>
-                    <Field label="Segundo Apellido">
-                      <Input {...register('repSegundoApellido')} />
-                    </Field>
-                    <Field label="Cédula" required error={errors.repCedula?.message}>
-                      <Input {...register('repCedula', { required: 'Obligatorio' })} />
-                    </Field>
-                    <Field label="Teléfono" required error={errors.repTelefono?.message}>
-                      <Input type="tel" {...register('repTelefono', { required: 'Obligatorio' })} />
-                    </Field>
-                    <div className="md:col-span-2">
-                      <Field label="Correo electrónico" required error={errors.repEmail?.message}>
-                        <Input type="email" {...register('repEmail', { required: 'Obligatorio' })} />
-                      </Field>
-                    </div>
+            {[
+              { title: 'Gerente', prefix: 'gerente' },
+              { title: 'Asistente de Gerencia', prefix: 'asistente' },
+              { title: 'Dr. Recurso Humano', prefix: 'rrhh' },
+              { title: 'Jefe / Jefa de Cartera', prefix: 'cartera' },
+            ].map(({ title, prefix }) => (
+              <div key={prefix} className="bg-white rounded-2xl border-2 border-gray-100 p-6 shadow-sm hover:border-gray-200 transition-colors">
+                <h3 className="text-base font-bold text-gray-700 mb-4">{title} <span className="text-gray-400 font-normal text-sm">(opcional)</span></h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="md:col-span-1">
+                    <Input {...register(`${prefix}Nombre`)} placeholder="Nombre completo" />
+                  </div>
+                  <div>
+                    <Input type="tel" {...register(`${prefix}Telefono`)} placeholder="Teléfono" />
+                  </div>
+                  <div>
+                    <Input type="email" {...register(`${prefix}Email`)} placeholder="Correo electrónico" />
                   </div>
                 </div>
+              </div>
+            ))}
 
+            <div className="flex justify-between">
+              <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">
+                Anterior
+              </motion.button>
+              <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">
+                Siguiente <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {/* ══════════════ PASO 3 - SIEMPRE MONTADO ══════════════ */}
+        <div style={{ display: step === 3 ? 'block' : 'none' }}>
+          <div className="space-y-6">
+            <div className="bg-primary-50 border-2 border-primary-100 rounded-2xl p-5">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" {...register('serviciosSocializados')} className="mt-1 w-4 h-4 accent-primary-500" />
+                <span className="text-sm font-semibold text-gray-700">
+                  Me fueron socializados los servicios y beneficios del portafolio de Fenalco Santander.
+                </span>
+              </label>
+            </div>
+
+            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-800 mb-1">Referencias Comerciales</h3>
+              <p className="text-sm text-gray-500 mb-5">Empresas con las que tiene relación como cliente o proveedor (opcional)</p>
+              {[1, 2].map(n => (
+                <div key={n} className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-primary-100 transition-colors">
+                  <p className="text-sm font-bold text-gray-600 mb-3">Referencia {n}</p>
+                  <div className="grid md:grid-cols-3 gap-3">
+                    <Input {...register(`ref${n}Nombre`)} placeholder="Nombre empresa" />
+                    <Input {...register(`ref${n}Direccion`)} placeholder="Dirección" />
+                    <Input {...register(`ref${n}Telefono`)} placeholder="Teléfono" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-800 mb-1">Refiera una empresa</h3>
+              <p className="text-sm text-gray-500 mb-5">¡Obtenga beneficios por referir empresas a Fenalco! (opcional)</p>
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="grid md:grid-cols-2 gap-3">
+                  <Input {...register('refiere1Nombre')} placeholder="Nombre empresa" />
+                  <Input {...register('refiere1Direccion')} placeholder="Dirección" />
+                  <Input type="email" {...register('refiere1Email')} placeholder="Correo electrónico" />
+                  <Input {...register('refiere1Telefono')} placeholder="Teléfono" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-800 mb-5">
+                <FileText className="inline w-5 h-5 text-primary-500 mr-2" />
+                Documentos Requeridos
+              </h3>
+              <div className="space-y-4">
                 {[
-                  { title: 'Gerente', prefix: 'gerente' },
-                  { title: 'Asistente de Gerencia', prefix: 'asistente' },
-                  { title: 'Dr. Recurso Humano', prefix: 'rrhh' },
-                  { title: 'Jefe / Jefa de Cartera', prefix: 'cartera' },
-                ].map(({ title, prefix }) => (
-                  <div key={prefix} className="bg-white rounded-2xl border-2 border-gray-100 p-6 shadow-sm hover:border-gray-200 transition-colors">
-                    <h3 className="text-base font-bold text-gray-700 mb-4">{title} <span className="text-gray-400 font-normal text-sm">(opcional)</span></h3>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div className="md:col-span-1">
-                        <Input {...register(`${prefix}Nombre`)} placeholder="Nombre completo" />
-                      </div>
-                      <div>
-                        <Input type="tel" {...register(`${prefix}Telefono`)} placeholder="Teléfono" />
-                      </div>
-                      <div>
-                        <Input type="email" {...register(`${prefix}Email`)} placeholder="Correo electrónico" />
-                      </div>
+                  { name: 'docRUT', label: 'RUT', hint: 'Registro Único Tributario' },
+                  { name: 'docCamara', label: 'Cámara de Comercio', hint: 'No mayor a 30 días' },
+                  { name: 'docRepresentante', label: 'Cédula Representante Legal', hint: 'Ambos lados' },
+                  { name: 'docRenta', label: 'Declaración de Renta', hint: 'Último año' },
+                ].map(doc => (
+                  <div key={doc.name} className="flex items-center gap-4 p-4 border-2 border-dashed border-gray-200 rounded-xl hover:border-primary-300 hover:bg-primary-50/30 transition-all">
+                    <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-primary-500" />
                     </div>
+                    <div className="flex-grow min-w-0">
+                      <p className="text-sm font-bold text-gray-700">{doc.label} <span className="text-red-500">*</span></p>
+                      <p className="text-xs text-gray-400">{doc.hint}</p>
+                      {errors[doc.name] && <p className="text-red-500 text-xs mt-0.5">{errors[doc.name].message}</p>}
+                    </div>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      {...register(doc.name, { required: 'Documento requerido' })}
+                      className="text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100"
+                    />
                   </div>
                 ))}
-
-                <div className="flex justify-between">
-                  <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">
-                    Anterior
-                  </motion.button>
-                  <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">
-                    Siguiente <ChevronRight className="w-5 h-5" />
-                  </motion.button>
-                </div>
               </div>
-            </motion.div>
-          )}
+            </div>
 
-          {/* ── PASO 3 ── */}
-          {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.25 }}>
-              <div className="space-y-6">
-                <div className="bg-primary-50 border-2 border-primary-100 rounded-2xl p-5">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" {...register('serviciosSocializados')} className="mt-1 w-4 h-4 accent-primary-500" />
-                    <span className="text-sm font-semibold text-gray-700">
-                      Me fueron socializados los servicios y beneficios del portafolio de Fenalco Santander.
-                    </span>
+            <div className="flex justify-between">
+              <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">
+                Anterior
+              </motion.button>
+              <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">
+                Siguiente <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {/* ══════════════ PASO 4 - SIEMPRE MONTADO ══════════════ */}
+        <div style={{ display: step === 4 ? 'block' : 'none' }}>
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-800 mb-5">
+                <CreditCard className="inline w-5 h-5 text-primary-500 mr-2" />
+                Forma de Pago
+              </h3>
+              <div className="grid md:grid-cols-3 gap-5">
+                <Field label="Periodicidad de Facturación" required error={errors.periodicidad?.message}>
+                  <Select {...register('periodicidad', { required: 'Obligatorio' })}>
+                    <option value="">Selecciona</option>
+                    <option value="mensual">Mensual</option>
+                    <option value="trimestral">Trimestral</option>
+                    <option value="semestral">Semestral</option>
+                    <option value="anual">Anual</option>
+                  </Select>
+                </Field>
+                <Field label="N° de Empleados" required error={errors.numEmpleadosPago?.message}>
+                  <Input type="number" {...register('numEmpleadosPago', { required: 'Obligatorio' })} placeholder="Ej: 5" />
+                </Field>
+                <Field label="Ventas Anuales (COP)" required error={errors.ventas?.message}>
+                  <Input type="number" {...register('ventas', { required: 'Obligatorio' })} placeholder="Ej: 50000000" />
+                </Field>
+              </div>
+              <div className="mt-5">
+                <Field label="Correo para Facturación Electrónica" required error={errors.emailFacturacion?.message}>
+                  <Input type="email" {...register('emailFacturacion', { required: 'Obligatorio' })} placeholder="facturacion@empresa.com" />
+                </Field>
+              </div>
+              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                <AlertCircle className="inline w-4 h-4 mr-1.5" />
+                La tarifa está sujeta a verificación por parte de FENALCO. La membresía se paga una única vez, siempre que el afiliado permanezca vinculado.
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm space-y-5">
+              <h3 className="text-lg font-bold text-gray-800">Autorizaciones y Declaraciones</h3>
+              {[
+                {
+                  name: 'autorizacionDatos',
+                  title: 'Autorización Tratamiento de Datos',
+                  text: 'Autorizo a FENALCO SANTANDER (NIT 890201284-7) para que recopile y trate mi información personal según la ley 1581 de 2012, con la finalidad de propender por el desarrollo del comercio y los comerciantes de la región.',
+                },
+                {
+                  name: 'declaracionBienes',
+                  title: 'Declaración de Origen de Bienes',
+                  text: 'Declaro que mis recursos provienen del giro ordinario de mis actividades y no son fruto de actividades ilícitas. Cumplo con las normas sobre prevención de lavado de activos y financiación del terrorismo (LA/FT).',
+                },
+                {
+                  name: 'clausulaPermanencia',
+                  title: 'Cláusula de Permanencia',
+                  text: 'Me comprometo a permanecer en la agremiación por mínimo un (1) año, prorrogable automáticamente. Para retiro, notificaré con 30 días calendario de antelación.',
+                },
+              ].map(auth => (
+                <div key={auth.name} className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:border-primary-100 transition-colors">
+                  <h4 className="font-bold text-sm text-gray-700 mb-2">{auth.title}</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed mb-3">{auth.text}</p>
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input type="checkbox" {...register(auth.name, { required: 'Debes aceptar este campo' })} className="w-4 h-4 accent-primary-500" />
+                    <span className="text-sm font-semibold text-gray-700">Acepto <span className="text-red-500">*</span></span>
                   </label>
+                  {errors[auth.name] && <p className="text-red-500 text-xs mt-1">{errors[auth.name].message}</p>}
                 </div>
+              ))}
+            </div>
 
-                <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-800 mb-1">Referencias Comerciales</h3>
-                  <p className="text-sm text-gray-500 mb-5">Empresas con las que tiene relación como cliente o proveedor (opcional)</p>
-                  {[1, 2].map(n => (
-                    <div key={n} className="mb-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-primary-100 transition-colors">
-                      <p className="text-sm font-bold text-gray-600 mb-3">Referencia {n}</p>
-                      <div className="grid md:grid-cols-3 gap-3">
-                        <Input {...register(`ref${n}Nombre`)} placeholder="Nombre empresa" />
-                        <Input {...register(`ref${n}Direccion`)} placeholder="Dirección" />
-                        <Input {...register(`ref${n}Telefono`)} placeholder="Teléfono" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-800 mb-1">Refiera una empresa</h3>
-                  <p className="text-sm text-gray-500 mb-5">¡Obtenga beneficios por referir empresas a Fenalco! (opcional)</p>
-                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <Input {...register('refiere1Nombre')} placeholder="Nombre empresa" />
-                      <Input {...register('refiere1Direccion')} placeholder="Dirección" />
-                      <Input type="email" {...register('refiere1Email')} placeholder="Correo electrónico" />
-                      <Input {...register('refiere1Telefono')} placeholder="Teléfono" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-800 mb-5">
-                    <FileText className="inline w-5 h-5 text-primary-500 mr-2" />
-                    Documentos Requeridos
-                  </h3>
-                  <div className="space-y-4">
-                    {[
-                      { name: 'docRUT', label: 'RUT', hint: 'Registro Único Tributario' },
-                      { name: 'docCamara', label: 'Cámara de Comercio', hint: 'No mayor a 30 días' },
-                      { name: 'docRepresentante', label: 'Cédula Representante Legal', hint: 'Ambos lados' },
-                      { name: 'docRenta', label: 'Declaración de Renta', hint: 'Último año' },
-                    ].map(doc => (
-                      <div key={doc.name} className="flex items-center gap-4 p-4 border-2 border-dashed border-gray-200 rounded-xl hover:border-primary-300 hover:bg-primary-50/30 transition-all">
-                        <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <FileText className="w-5 h-5 text-primary-500" />
-                        </div>
-                        <div className="flex-grow min-w-0">
-                          <p className="text-sm font-bold text-gray-700">{doc.label} <span className="text-red-500">*</span></p>
-                          <p className="text-xs text-gray-400">{doc.hint}</p>
-                          {errors[doc.name] && <p className="text-red-500 text-xs mt-0.5">{errors[doc.name].message}</p>}
-                        </div>
-                        <input
-                          type="file"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          {...register(doc.name, { required: 'Documento requerido' })}
-                          className="text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex justify-between">
-                  <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">
-                    Anterior
-                  </motion.button>
-                  <motion.button type="button" onClick={goNext} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md">
-                    Siguiente <ChevronRight className="w-5 h-5" />
-                  </motion.button>
-                </div>
+            <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-800 mb-5">Firma Electrónica del Representante Legal</h3>
+              <div className="grid md:grid-cols-2 gap-5 mb-5">
+                <Field label="Nombre Completo" required error={errors.firmaNombre?.message}>
+                  <Input {...register('firmaNombre', { required: 'Obligatorio' })} placeholder="Nombre y apellidos completos" />
+                </Field>
+                <Field label="Cédula" required error={errors.firmaCedula?.message}>
+                  <Input {...register('firmaCedula', { required: 'Obligatorio' })} placeholder="Número de cédula" />
+                </Field>
               </div>
-            </motion.div>
-          )}
-
-          {/* ── PASO 4 ── */}
-          {step === 4 && (
-            <motion.div key="step4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.25 }}>
-              <div className="space-y-6">
-                <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-800 mb-5">
-                    <CreditCard className="inline w-5 h-5 text-primary-500 mr-2" />
-                    Forma de Pago
-                  </h3>
-                  <div className="grid md:grid-cols-3 gap-5">
-                    <Field label="Periodicidad de Facturación" required error={errors.periodicidad?.message}>
-                      <Select {...register('periodicidad', { required: 'Obligatorio' })}>
-                        <option value="">Selecciona</option>
-                        <option value="mensual">Mensual</option>
-                        <option value="trimestral">Trimestral</option>
-                        <option value="semestral">Semestral</option>
-                        <option value="anual">Anual</option>
-                      </Select>
-                    </Field>
-                    <Field label="N° de Empleados" required error={errors.numEmpleadosPago?.message}>
-                      <Input type="number" {...register('numEmpleadosPago', { required: 'Obligatorio' })} placeholder="Ej: 5" />
-                    </Field>
-                    <Field label="Ventas Anuales (COP)" required error={errors.ventas?.message}>
-                      <Input type="number" {...register('ventas', { required: 'Obligatorio' })} placeholder="Ej: 50000000" />
-                    </Field>
-                  </div>
-                  <div className="mt-5">
-                    <Field label="Correo para Facturación Electrónica" required error={errors.emailFacturacion?.message}>
-                      <Input type="email" {...register('emailFacturacion', { required: 'Obligatorio' })} placeholder="facturacion@empresa.com" />
-                    </Field>
-                  </div>
-                  <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-                    <AlertCircle className="inline w-4 h-4 mr-1.5" />
-                    La tarifa está sujeta a verificación por parte de FENALCO. La membresía se paga una única vez, siempre que el afiliado permanezca vinculado.
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm space-y-5">
-                  <h3 className="text-lg font-bold text-gray-800">Autorizaciones y Declaraciones</h3>
-                  {[
-                    {
-                      name: 'autorizacionDatos',
-                      title: 'Autorización Tratamiento de Datos',
-                      text: 'Autorizo a FENALCO SANTANDER (NIT 890201284-7) para que recopile y trate mi información personal según la ley 1581 de 2012, con la finalidad de propender por el desarrollo del comercio y los comerciantes de la región.',
-                    },
-                    {
-                      name: 'declaracionBienes',
-                      title: 'Declaración de Origen de Bienes',
-                      text: 'Declaro que mis recursos provienen del giro ordinario de mis actividades y no son fruto de actividades ilícitas. Cumplo con las normas sobre prevención de lavado de activos y financiación del terrorismo (LA/FT).',
-                    },
-                    {
-                      name: 'clausulaPermanencia',
-                      title: 'Cláusula de Permanencia',
-                      text: 'Me comprometo a permanecer en la agremiación por mínimo un (1) año, prorrogable automáticamente. Para retiro, notificaré con 30 días calendario de antelación.',
-                    },
-                  ].map(auth => (
-                    <div key={auth.name} className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:border-primary-100 transition-colors">
-                      <h4 className="font-bold text-sm text-gray-700 mb-2">{auth.title}</h4>
-                      <p className="text-xs text-gray-500 leading-relaxed mb-3">{auth.text}</p>
-                      <label className="flex items-center gap-2.5 cursor-pointer">
-                        <input type="checkbox" {...register(auth.name, { required: 'Debes aceptar este campo' })} className="w-4 h-4 accent-primary-500" />
-                        <span className="text-sm font-semibold text-gray-700">Acepto <span className="text-red-500">*</span></span>
-                      </label>
-                      {errors[auth.name] && <p className="text-red-500 text-xs mt-1">{errors[auth.name].message}</p>}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 md:p-8 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-800 mb-5">Firma Electrónica del Representante Legal</h3>
-                  <div className="grid md:grid-cols-2 gap-5 mb-5">
-                    <Field label="Nombre Completo" required error={errors.firmaNombre?.message}>
-                      <Input {...register('firmaNombre', { required: 'Obligatorio' })} placeholder="Nombre y apellidos completos" />
-                    </Field>
-                    <Field label="Cédula" required error={errors.firmaCedula?.message}>
-                      <Input {...register('firmaCedula', { required: 'Obligatorio' })} placeholder="Número de cédula" />
-                    </Field>
-                  </div>
-                  <div className="bg-blue-50 border-2 border-blue-100 rounded-xl p-4">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input type="checkbox" {...register('firmaConsentimiento', { required: 'Debes aceptar para continuar' })} className="mt-1 w-4 h-4 accent-primary-500" />
-                      <span className="text-sm text-gray-700 leading-relaxed">
-                        Al marcar esta casilla confirmo que he leído y acepto todos los términos de afiliación a FENALCO Santander. Esta firma electrónica tiene la misma validez legal que una firma manuscrita. <span className="text-red-500">*</span>
-                      </span>
-                    </label>
-                    {errors.firmaConsentimiento && <p className="text-red-500 text-xs mt-1.5">{errors.firmaConsentimiento.message}</p>}
-                  </div>
-                </div>
-
-                <div className="flex justify-between">
-                  <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">
-                    Anterior
-                  </motion.button>
-                  <motion.button
-                    type="submit"
-                    disabled={isSubmitting}
-                    whileHover={{ scale: isSubmitting ? 1 : 1.03, y: isSubmitting ? 0 : -1 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 text-white font-bold px-10 py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                        Enviando...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-5 h-5" /> Enviar Solicitud
-                      </>
-                    )}
-                  </motion.button>
-                </div>
+              <div className="bg-blue-50 border-2 border-blue-100 rounded-xl p-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" {...register('firmaConsentimiento', { required: 'Debes aceptar para continuar' })} className="mt-1 w-4 h-4 accent-primary-500" />
+                  <span className="text-sm text-gray-700 leading-relaxed">
+                    Al marcar esta casilla confirmo que he leído y acepto todos los términos de afiliación a FENALCO Santander. Esta firma electrónica tiene la misma validez legal que una firma manuscrita. <span className="text-red-500">*</span>
+                  </span>
+                </label>
+                {errors.firmaConsentimiento && <p className="text-red-500 text-xs mt-1.5">{errors.firmaConsentimiento.message}</p>}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+
+            <div className="flex justify-between">
+              <motion.button type="button" onClick={goPrev} whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-7 py-3 rounded-xl transition-all">
+                Anterior
+              </motion.button>
+              <motion.button
+                type="submit"
+                disabled={isSubmitting}
+                whileHover={{ scale: isSubmitting ? 1 : 1.03, y: isSubmitting ? 0 : -1 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 text-white font-bold px-10 py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5" /> Enviar Solicitud
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </div>
+        </div>
       </form>
     </div>
   );
@@ -771,7 +765,7 @@ const onSubmit = async (data) => {
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 const Affiliate = () => {
-  const [activeTab, setActiveTab] = useState('info');
+  const [activeTab, setActiveTab] = useState('formulario');
   const tabsSectionRef = useRef(null);
 
   const scrollToTabs = (tab) => {
@@ -783,37 +777,18 @@ const Affiliate = () => {
 
   return (
     <div className="pt-20">
-      {/* ── Hero ── */}
       <section className="relative gradient-primary py-28 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <motion.div
-            animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"
-          />
-          <motion.div
-            animate={{ scale: [1, 1.3, 1], rotate: [0, -90, 0] }}
-            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-            className="absolute -bottom-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"
-          />
+          <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+          <motion.div animate={{ scale: [1, 1.3, 1], rotate: [0, -90, 0] }} transition={{ duration: 25, repeat: Infinity, ease: 'linear' }} className="absolute -bottom-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
           {[...Array(5)].map((_, i) => (
-            <motion.div key={i}
-              animate={{ y: [0, -18, 0], opacity: [0.2, 0.6, 0.2] }}
-              transition={{ duration: 3 + i * 0.8, repeat: Infinity, delay: i * 0.5 }}
-              className="absolute w-1 h-1 bg-white/30 rounded-full"
-              style={{ left: `${15 + i * 17}%`, top: `${25 + (i % 2) * 35}%` }}
-            />
+            <motion.div key={i} animate={{ y: [0, -18, 0], opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 3 + i * 0.8, repeat: Infinity, delay: i * 0.5 }} className="absolute w-1 h-1 bg-white/30 rounded-full" style={{ left: `${15 + i * 17}%`, top: `${25 + (i % 2) * 35}%` }} />
           ))}
         </div>
 
         <div className="container-custom relative z-10 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white text-sm font-semibold px-5 py-2.5 rounded-full mb-6 border border-white/20"
-            >
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white text-sm font-semibold px-5 py-2.5 rounded-full mb-6 border border-white/20">
               <CheckCircle className="w-4 h-4" /> Únete a más de 500 empresarios
             </motion.div>
 
@@ -821,12 +796,7 @@ const Affiliate = () => {
               Haz parte de la<br />
               <span className="relative">
                 <span className="relative z-10">fuerza</span>
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ delay: 0.5, duration: 0.5 }}
-                  className="absolute bottom-0 left-0 right-0 h-3 bg-white/20 rounded-full -z-0"
-                />
+                <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.5, duration: 0.5 }} className="absolute bottom-0 left-0 right-0 h-3 bg-white/20 rounded-full -z-0" />
               </span>{' '}
               que une
             </h1>
@@ -835,20 +805,10 @@ const Affiliate = () => {
             </p>
 
             <div className="flex flex-wrap justify-center gap-3">
-              <motion.button
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => scrollToTabs('formulario')}
-                className="flex items-center gap-2 bg-white text-primary-600 font-bold px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all"
-              >
+              <motion.button whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }} onClick={() => scrollToTabs('formulario')} className="flex items-center gap-2 bg-white text-primary-600 font-bold px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all">
                 Formulario de Afiliación <ArrowRight className="w-4 h-4" />
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => scrollToTabs('pago')}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-8 py-3.5 rounded-full backdrop-blur-sm transition-all border border-white/20"
-              >
+              <motion.button whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }} onClick={() => scrollToTabs('pago')} className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-8 py-3.5 rounded-full backdrop-blur-sm transition-all border border-white/20">
                 <Landmark className="w-4 h-4" /> Pagar Mensualidad
               </motion.button>
             </div>
@@ -862,32 +822,18 @@ const Affiliate = () => {
         </div>
       </section>
 
-      {/* ── Beneficios ── */}
       <section className="section-padding bg-white">
         <div className="container-custom">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-            <span className="inline-block bg-primary-50 text-primary-700 text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
-              Por qué afiliarte
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              ¿Cuáles son los <span className="text-gradient">beneficios</span>?
-            </h2>
+            <span className="inline-block bg-primary-50 text-primary-700 text-sm font-semibold px-4 py-1.5 rounded-full mb-4">Por qué afiliarte</span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">¿Cuáles son los <span className="text-gradient">beneficios</span>?</h2>
             <p className="text-gray-500 text-lg">Todo lo que obtienes al ser parte de Fenalco Sur de Santander</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             {BENEFITS.map((b, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white border-2 border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 hover:border-primary-100 transition-all duration-300 group"
-              >
-                <div className={`w-14 h-14 ${b.light} rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
-                  {b.icon}
-                </div>
+              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="bg-white border-2 border-gray-100 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-2 hover:border-primary-100 transition-all duration-300 group">
+                <div className={`w-14 h-14 ${b.light} rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>{b.icon}</div>
                 <h3 className="font-bold text-gray-800 mb-2 group-hover:text-primary-600 transition-colors">{b.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{b.desc}</p>
               </motion.div>
@@ -895,38 +841,23 @@ const Affiliate = () => {
           </div>
 
           <div className="text-center">
-            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              className="inline-flex items-center gap-2 border-2 border-primary-500 text-primary-600 hover:bg-primary-50 font-semibold px-7 py-3 rounded-xl transition-all">
+            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="inline-flex items-center gap-2 border-2 border-primary-500 text-primary-600 hover:bg-primary-50 font-semibold px-7 py-3 rounded-xl transition-all">
               <Download className="w-4 h-4" /> Descargar Portafolio de Servicios
             </motion.button>
           </div>
         </div>
       </section>
 
-      {/* ── Requisitos ── */}
       <section className="section-padding bg-gray-50">
         <div className="container-custom">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-10">
-            <span className="inline-block bg-primary-50 text-primary-700 text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
-              Documentos necesarios
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              Requisitos para <span className="text-gradient">Afiliarse</span>
-            </h2>
+            <span className="inline-block bg-primary-50 text-primary-700 text-sm font-semibold px-4 py-1.5 rounded-full mb-4">Documentos necesarios</span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">Requisitos para <span className="text-gradient">Afiliarse</span></h2>
           </motion.div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-4xl mx-auto">
             {REQUIREMENTS.map((r, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
-              >
-                <div className="w-11 h-11 bg-primary-100 text-primary-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-500 group-hover:text-white transition-all duration-300">
-                  {r.icon}
-                </div>
+              <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group">
+                <div className="w-11 h-11 bg-primary-100 text-primary-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary-500 group-hover:text-white transition-all duration-300">{r.icon}</div>
                 <h3 className="font-bold text-gray-800 text-sm mb-1">{r.title}</h3>
                 <p className="text-xs text-gray-400">{r.note}</p>
               </motion.div>
@@ -935,25 +866,13 @@ const Affiliate = () => {
         </div>
       </section>
 
-      {/* ── Tabs sticky — FIX: ref para scroll correcto ── */}
       <div ref={tabsSectionRef} className="scroll-mt-20">
         <section className="bg-white py-6 sticky top-20 z-30 shadow-sm">
           <div className="container-custom">
             <div className="flex justify-center">
               <div className="bg-gray-100 rounded-2xl p-1.5 flex gap-1">
-                {[
-                  { id: 'formulario', label: '📋 Formulario de Afiliación' },
-                  { id: 'pago', label: '🏦 Pagar Mensualidad' },
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                      activeTab === tab.id
-                        ? 'bg-white text-primary-600 shadow-md'
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
+                {[{ id: 'formulario', label: '📋 Formulario de Afiliación' }, { id: 'pago', label: '🏦 Pagar Mensualidad' }].map(tab => (
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${activeTab === tab.id ? 'bg-white text-primary-600 shadow-md' : 'text-gray-500 hover:text-gray-700'}`}>
                     {tab.label}
                   </button>
                 ))}
@@ -963,43 +882,28 @@ const Affiliate = () => {
         </section>
       </div>
 
-      {/* ── Contenido activo ── */}
       <AnimatePresence mode="wait">
         {activeTab === 'formulario' && (
-          <motion.section
-            key="formulario"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="section-padding bg-gray-50"
-          >
+          <motion.section key="formulario" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="section-padding bg-gray-50">
             <div className="container-custom">
               <div className="grid lg:grid-cols-4 gap-10 max-w-6xl mx-auto">
                 <div className="lg:col-span-1">
                   <div className="sticky top-40">
                     <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-6 text-white mb-5 shadow-xl">
-                      <div className="w-16 h-16 bg-white/20 rounded-xl mb-4 flex items-center justify-center border border-white/20">
-                        <Phone className="w-8 h-8" />
-                      </div>
+                      <div className="w-16 h-16 bg-white/20 rounded-xl mb-4 flex items-center justify-center border border-white/20"><Phone className="w-8 h-8" /></div>
                       <h3 className="font-bold text-lg mb-1">¿Necesitas ayuda?</h3>
                       <p className="text-white/80 text-sm mb-5">Carolina Chacón<br />Coordinadora Comercial</p>
                       <div className="space-y-3">
-                        <motion.a href="https://wa.me/573185840599?text=Hola,%20necesito%20ayuda%20con%20mi%20afiliación%20a%20Fenalco"
-                          target="_blank" rel="noopener noreferrer"
-                          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                          className="flex items-center gap-2 bg-[#25D366] hover:bg-[#20bc5a] text-white font-semibold py-2.5 px-4 rounded-xl transition-all text-sm">
+                        <motion.a href="https://wa.me/573185840599?text=Hola,%20necesito%20ayuda%20con%20mi%20afiliación%20a%20Fenalco" target="_blank" rel="noopener noreferrer" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex items-center gap-2 bg-[#25D366] hover:bg-[#20bc5a] text-white font-semibold py-2.5 px-4 rounded-xl transition-all text-sm">
                           <Phone className="w-4 h-4" /> WhatsApp
                         </motion.a>
-                        <motion.a href="mailto:administrativosurdesantander@fenalco.com.co"
-                          whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                          className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold py-2.5 px-4 rounded-xl transition-all text-sm">
+                        <motion.a href="mailto:administrativosurdesantander@fenalco.com.co" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold py-2.5 px-4 rounded-xl transition-all text-sm">
                           <Mail className="w-4 h-4" /> Enviar correo
                         </motion.a>
                       </div>
                     </div>
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-700">
-                      <Info className="inline w-3.5 h-3.5 mr-1" />
-                      Tienes dudas sobre el proceso de afiliación, escríbenos y te ayudamos.
+                      <Info className="inline w-3.5 h-3.5 mr-1" />Tienes dudas sobre el proceso de afiliación, escríbenos y te ayudamos.
                     </div>
                   </div>
                 </div>
@@ -1023,27 +927,20 @@ const Affiliate = () => {
         )}
       </AnimatePresence>
 
-      {/* ── CTA Final ── */}
       <section className="section-padding gradient-primary relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <motion.div animate={{ scale: [1, 1.3, 1], rotate: [0, 90, 0] }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            className="absolute -top-20 -right-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
-          <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, -90, 0] }} transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-            className="absolute -bottom-20 -left-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
+          <motion.div animate={{ scale: [1, 1.3, 1], rotate: [0, 90, 0] }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} className="absolute -top-20 -right-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
+          <motion.div animate={{ scale: [1, 1.2, 1], rotate: [0, -90, 0] }} transition={{ duration: 25, repeat: Infinity, ease: 'linear' }} className="absolute -bottom-20 -left-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
         </div>
         <div className="container-custom relative z-10 text-center">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">¿Tienes dudas sobre la afiliación?</h2>
             <p className="text-white/90 text-lg mb-8 max-w-lg mx-auto">Contáctanos directamente y resolveremos todas tus preguntas</p>
             <div className="flex flex-wrap justify-center gap-4">
-              <motion.a href="https://wa.me/573185840599" target="_blank" rel="noopener noreferrer"
-                whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-2 bg-[#25D366] hover:bg-[#20bc5a] text-white font-bold px-8 py-3.5 rounded-full transition-all shadow-lg">
+              <motion.a href="https://wa.me/573185840599" target="_blank" rel="noopener noreferrer" whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-[#25D366] hover:bg-[#20bc5a] text-white font-bold px-8 py-3.5 rounded-full transition-all shadow-lg">
                 <Phone className="w-5 h-5" /> WhatsApp
               </motion.a>
-              <motion.a href="mailto:administrativosurdesantander@fenalco.com.co"
-                whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-8 py-3.5 rounded-full backdrop-blur-sm transition-all border border-white/20">
+              <motion.a href="mailto:administrativosurdesantander@fenalco.com.co" whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }} className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-8 py-3.5 rounded-full backdrop-blur-sm transition-all border border-white/20">
                 <Mail className="w-5 h-5" /> Enviar correo
               </motion.a>
             </div>
